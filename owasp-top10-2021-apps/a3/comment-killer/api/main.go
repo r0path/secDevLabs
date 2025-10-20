@@ -29,11 +29,31 @@ func GetComments(c echo.Context) error {
 func PostComments(c echo.Context) error {
 	var incomingComment *incommingComment
 
+	// Prevent extremely large request bodies from being read into memory
+	const maxRequestBody = 4 * 1024 // 4 KB
+	c.Request().Body = http.MaxBytesReader(c.Response().Writer, c.Request().Body, int64(maxRequestBody))
+
 	if err := c.Bind(&incomingComment); err != nil {
 		fmt.Println(err.Error())
 
 		return c.JSON(http.StatusBadRequest,
 			map[string]string{"result": "fail", "message": err.Error()})
+	}
+
+	// Validate incoming comment length to avoid large allocations
+	const maxCommentLength = 1024 // bytes
+	if len(incomingComment.Text) == 0 || len(incomingComment.Text) > maxCommentLength {
+		msg := "comment must be between 1 and 1024 bytes"
+		fmt.Println(msg)
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "fail", "message": msg})
+	}
+
+	// Enforce an upper bound on stored comments to cap memory usage
+	const maxStoredComments = 1000
+	if len(comments.Text) >= maxStoredComments {
+		msg := "comments storage capacity reached"
+		fmt.Println(msg)
+		return c.JSON(http.StatusInsufficientStorage, map[string]string{"result": "fail", "message": msg})
 	}
 
 	comments.Text = append(comments.Text, incomingComment.Text)
