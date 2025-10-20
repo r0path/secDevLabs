@@ -15,7 +15,6 @@ function execQuery(query, fields){
             if (err){
                 return reject(err);
             }else{
-                console.log(results)
                 return resolve(results);
             }
         }
