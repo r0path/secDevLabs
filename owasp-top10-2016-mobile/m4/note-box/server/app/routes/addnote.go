@@ -15,6 +15,15 @@ func AddNote(c echo.Context) error {
 	claims := user.Claims.(jwt.MapClaims)
 	jwtUsername := claims["name"].(string)
 
+	// Verify server-side session state: ensure the user is still logged in
+	dbUser, err := db.FindOneUser(jwtUsername)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, "Invalid session or user not found")
+	}
+	if !dbUser.IsLoggedIn {
+		return c.JSON(http.StatusUnauthorized, "User is logged out")
+	}
+
 	receivedNote := new(types.Note)
 	if err := c.Bind(receivedNote); err != nil {
 		return c.JSON(http.StatusInternalServerError, "Error unmarshaling new note")
