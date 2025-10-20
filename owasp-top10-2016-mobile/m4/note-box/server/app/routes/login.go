@@ -34,10 +34,8 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "Username or password is wrong or the user doesn't exist")
 	}
 
-	if user.IsLoggedIn {
-		return c.JSON(http.StatusConflict, "User is already logged in!")
-	}
-
+	// Allow multiple concurrent sessions (do not enforce single-session via IsLoggedIn)
+	
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 
