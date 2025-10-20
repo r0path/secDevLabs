@@ -188,6 +188,9 @@ function verifyJWT(req, res, next){
             return res
                 .sendFile(path.join(__dirname+'/public/views/error.html'))
         }
+        // Bind the verified identity to the request so downstream handlers
+        // can enforce server-side authorization based on the token subject.
+        req.user = decoded;
         next();
     });
 }
