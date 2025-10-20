@@ -3,6 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -102,7 +104,24 @@ func RegisterUser(c echo.Context) error {
 		// error binding JSON
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error user data1."})
 	}
-	// input validation missing!
+
+	// Basic input validation to avoid empty/malformed usernames or weak passwords.
+	// Username: 3-30 chars, letters, numbers, dot, underscore, hyphen.
+	// Password: 8-128 chars, must include at least one letter and one digit.
+	userData.Username = strings.TrimSpace(userData.Username)
+	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]{3,30}$`)
+	if !usernameRegex.MatchString(userData.Username) {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Invalid username. Allowed: 3-30 characters, letters, numbers, . _ -"})
+	}
+
+	if len(userData.RawPassword) < 8 || len(userData.RawPassword) > 128 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Invalid password length. Minimum 8 characters."})
+	}
+	letterRegex := regexp.MustCompile(`[A-Za-z]`)
+	digitRegex := regexp.MustCompile(`[0-9]`)
+	if !letterRegex.MatchString(userData.RawPassword) || !digitRegex.MatchString(userData.RawPassword) {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Password must include at least one letter and one digit."})
+	}
 
 	newGUID1 := uuid.Must(uuid.NewRandom())
 	userData.UserID = newGUID1.String()
