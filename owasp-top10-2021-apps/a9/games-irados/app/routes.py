@@ -19,12 +19,25 @@ from model.password import Password
 from model.db import DataBase
 import logging
 import os
+import time
+from threading import Lock
 
 from flask_cors import CORS, cross_origin
 from model.db import DataBase
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
+
+# Simple in-memory rate limiter for login to mitigate brute force attacks.
+# NOTE: This is a per-process in-memory limiter and is suitable for single-process
+# deployments or testing. For production use across multiple processes/hosts,
+# replace with a distributed store (e.g., Redis) and a robust rate-limiting
+# middleware.
+RATE_LIMIT_MAX_ATTEMPTS = 5
+RATE_LIMIT_WINDOW = 300  # seconds
+LOCKOUT_TIME = 600  # seconds
+_login_attempts = {}
+_login_lock = Lock()
 
 app.config.from_pyfile('config.py')
 
@@ -74,11 +87,56 @@ def logout():
 def login():
     if request.method == 'POST':
         username = request.form.get('username').encode('utf-8')
+        username_str = username.decode('utf-8', errors='ignore') if username else ''
+        client_ip = request.remote_addr or 'unknown'
+        key = f"{username_str}:{client_ip}"
+        now = time.time()
+        # Check rate limit / lockout
+        with _login_lock:
+            entry = _login_attempts.get(key)
+            if entry:
+                if entry.get('locked_until', 0) > now:
+                    # Locked out - generic error
+                    flash("Usuario ou senha incorretos", "danger")
+                    return render_template('login.html')
+                # Reset if window expired
+                if now - entry.get('first_seen', now) > RATE_LIMIT_WINDOW:
+                    entry = {'attempts': 0, 'first_seen': now, 'locked_until': 0}
+                    _login_attempts[key] = entry
+            else:
+                _login_attempts[key] = {'attempts': 0, 'first_seen': now, 'locked_until': 0}
+
         psw = Password(request.form.get('password').encode('utf-8'))
         user_password, success = database.get_user_password(username)
-        if not success or user_password == None or not psw.validate_password(str(user_password[0])):
+        valid = success and user_password != None and psw.validate_password(str(user_password[0]))
+        if not valid:
+            with _login_lock:
+                e = _login_attempts.get(key)
+                if e is None:
+                    e = {'attempts': 1, 'first_seen': now, 'locked_until': 0}
+                    _login_attempts[key] = e
+                else:
+                    # Reset attempts if window expired
+                    if now - e.get('first_seen', now) > RATE_LIMIT_WINDOW:
+                        e['attempts'] = 1
+                        e['first_seen'] = now
+                        e['locked_until'] = 0
+                    else:
+                        e['attempts'] = e.get('attempts', 0) + 1
+                        if e['attempts'] >= RATE_LIMIT_MAX_ATTEMPTS:
+                            e['locked_until'] = now + LOCKOUT_TIME
+            # Generic error message to avoid username enumeration
             flash("Usuario ou senha incorretos", "danger")
             return render_template('login.html')
+
+        # Successful login: clear any recorded attempts
+        with _login_lock:
+            if key in _login_attempts:
+                try:
+                    del _login_attempts[key]
+                except Exception:
+                    pass
+
         session['username'] = username
         return redirect('/home')
     else:
