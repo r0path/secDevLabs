@@ -31,12 +31,14 @@ func main() {
 	// Healthcheck route
 	e.GET("/healthcheck", routes.Healthcheck)
 
-	e.Logger.Fatal(e.Start(":9051"))
-
 	defer func() {
 		cerr := db.Disconnect()
 		if err == nil {
 			err = cerr
 		}
 	}()
+
+	if serr := e.Start(":9051"); serr != nil {
+		e.Logger.Error(serr)
+	}
 }
