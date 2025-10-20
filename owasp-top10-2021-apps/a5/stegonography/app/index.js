@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 require("dotenv-safe").load();
 const jwt = require('jsonwebtoken');
 var mongo = require('mongodb')
+const crypto = require('crypto');
 
 // Configures everything needed for the app
 app.use(express.static('static'));
@@ -48,7 +49,13 @@ MongoClient.connect(url, function(err, db) {
 MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     var dbo = db.db("stego");
-    var myobj = { username: "admin", password: "admin" };
+    // Create a secure hash for the default admin password instead of storing plaintext
+    var salt = crypto.randomBytes(16).toString('hex');
+    var ITER = 100000;
+    var KEYLEN = 64;
+    var DIGEST = 'sha512';
+    var hash = crypto.pbkdf2Sync('admin', salt, ITER, KEYLEN, DIGEST).toString('hex');
+    var myobj = { username: "admin", password: salt + '$' + hash, iterations: ITER, keylen: KEYLEN, digest: DIGEST };
     dbo.collection("users").insertOne(myobj, function(err, res) {
         if (err) throw err;
         console.log("Admin user added to the database");
@@ -71,14 +78,48 @@ router.post("/login", function(req,res)  {
         MongoClient.connect(url, function(err, db) {
             if (err) throw err;
             var dbo = db.db("stego");
-            var query = { username: username, password: password };
+            // Query by username only, then verify password using a secure hash (PBKDF2)
+            var query = { username: username };
             dbo.collection("users").find(query).toArray(function(err, result) {
                 if (err) throw err;
                 db.close();
-                if( result.length == 0 ){
-                    callback('not_found')
+                if (result.length == 0) {
+                    callback('not_found');
                 } else {
-                    callback(result[0].username);
+                    var user = result[0];
+                    if (!user.password) {
+                        // Missing password field or unexpected format
+                        callback('not_found');
+                        return;
+                    }
+                    // Expected stored format: salt$hash (hex)
+                    var parts = user.password.split('$');
+                    if (parts.length !== 2) {
+                        callback('not_found');
+                        return;
+                    }
+                    var salt = parts[0];
+                    var storedHash = parts[1];
+                    var ITER = user.iterations || 100000;
+                    var KEYLEN = user.keylen || 64;
+                    var DIGEST = user.digest || 'sha512';
+
+                    var derived = crypto.pbkdf2Sync(password, salt, ITER, KEYLEN, DIGEST).toString('hex');
+                    try {
+                        var derivedBuf = Buffer.from(derived, 'hex');
+                        var storedBuf = Buffer.from(storedHash, 'hex');
+                        if (derivedBuf.length !== storedBuf.length) {
+                            callback('not_found');
+                            return;
+                        }
+                        if (crypto.timingSafeEqual(derivedBuf, storedBuf)) {
+                            callback(user.username);
+                        } else {
+                            callback('not_found');
+                        }
+                    } catch(e) {
+                        callback('not_found');
+                    }
                 }
             });
         });
