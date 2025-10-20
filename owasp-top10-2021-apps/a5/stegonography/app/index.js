@@ -27,7 +27,7 @@ var url = "mongodb://db:27017/stego"
 
 // Connect to the database
 MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
+    if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
     console.log("Database created!");
     db.close();
 });
@@ -35,10 +35,10 @@ MongoClient.connect(url, function(err, db) {
 // Create "users" collection
 var url = "mongodb://db:27017/stego"
 MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
+    if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
     var dbo = db.db("stego");
     dbo.createCollection("users", function(err, ress) {
-        if (err) throw err;
+        if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
         console.log("Users collection created!");
         db.close();
     })
@@ -46,11 +46,11 @@ MongoClient.connect(url, function(err, db) {
 
 // Add "admin" default user to the database
 MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
+    if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
     var dbo = db.db("stego");
     var myobj = { username: "admin", password: "admin" };
     dbo.collection("users").insertOne(myobj, function(err, res) {
-        if (err) throw err;
+        if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
         console.log("Admin user added to the database");
         db.close();
     });
@@ -69,11 +69,11 @@ router.post("/login", function(req,res)  {
     // Verifies user credentials
     function VerifiesUser(callback) {
         MongoClient.connect(url, function(err, db) {
-            if (err) throw err;
+            if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
             var dbo = db.db("stego");
             var query = { username: username, password: password };
             dbo.collection("users").find(query).toArray(function(err, result) {
-                if (err) throw err;
+                if (err) { console.error('MongoDB error:', err); if (typeof db !== 'undefined' && db) { try { db.close(); } catch (e) {} } if (typeof callback === 'function') { return callback('not_found'); } return; }
                 db.close();
                 if( result.length == 0 ){
                     callback('not_found')
