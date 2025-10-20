@@ -130,11 +130,20 @@ app.get('/statistics/data', verifyJWT, async (req, res) => {
             ties: 0
         }
     }
-    chartData = [
-        {y: statistics.wins*100/statistics.games,  label: 'Wins'},
-        {y: statistics.ties*100/statistics.games,  label: 'Ties'},
-        {y: statistics.loses*100/statistics.games,  label: 'Loses'}
-    ]
+    let chartData;
+    if (statistics.games === 0) {
+        chartData = [
+            {y: 0, label: 'Wins'},
+            {y: 0, label: 'Ties'},
+            {y: 0, label: 'Loses'}
+        ];
+    } else {
+        chartData = [
+            {y: statistics.wins * 100 / statistics.games, label: 'Wins'},
+            {y: statistics.ties * 100 / statistics.games, label: 'Ties'},
+            {y: statistics.loses * 100 / statistics.games, label: 'Loses'}
+        ];
+    }
     const response = {
         chartData,
         numbers: {
