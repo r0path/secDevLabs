@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -59,11 +60,11 @@ func TokenValid(r *http.Request) (types.Claims, error) {
 
 	err = json.Unmarshal(h, &header)
 	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
+		// Do not terminate the process on malformed input; return the error to the caller
+		return claims, fmt.Errorf("invalid JWT header JSON: %w", err)
 	}
 	if header.Typ != "JWT" {
-		log.Fatalln("Error on JWT")
+		return claims, fmt.Errorf("invalid token type: expected JWT, got %q", header.Typ)
 	}
 
 	c, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[1])
@@ -73,8 +74,8 @@ func TokenValid(r *http.Request) (types.Claims, error) {
 
 	err = json.Unmarshal(c, &claims)
 	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
+		// Do not terminate the process on malformed input; return the error to the caller
+		return claims, fmt.Errorf("invalid JWT claims JSON: %w", err)
 	}
 
 	return claims, nil
