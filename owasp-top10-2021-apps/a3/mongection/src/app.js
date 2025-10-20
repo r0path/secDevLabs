@@ -4,6 +4,14 @@ const path = require('path');
 const mongoose = require('mongoose');
 const db = require('./db');
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    if (typeof str !== 'string') str = String(str);
+    return str.replace(/[&<>'"`=\/]/g, function(s) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[s];
+    });
+}
+
 const server = express();
 
 const PORT = 10001;
@@ -43,9 +51,10 @@ server.post("/login", async (request, response) => {
 
         console.log(user.length)
 
-        if(user.length == 0) { response.send('Bad Credentials'); }
+        if(user.length == 0) { return response.send('Bad Credentials'); }
 
-        response.send("<h1>Hello, Welcome Again!</h1><h3>" + user + "</h3>");
+        const safeUser = Array.isArray(user) ? user.map(u => escapeHtml(u)).join(', ') : escapeHtml(user);
+        return response.send("<h1>Hello, Welcome Again!</h1><h3>" + safeUser + "</h3>");
     }
    
     catch(error) { throw error; }
