@@ -108,7 +108,9 @@ func RegisterUser(c echo.Context) error {
 	userData.UserID = newGUID1.String()
 
 	newGUID2 := uuid.Must(uuid.NewRandom())
-	userData.Ticket = fmt.Sprintf("%s-%s", userData.Username, newGUID2)
+	// Do not embed the username in the ticket to avoid leaking usernames via the ticket value.
+	// Use a random UUID string as the ticket instead.
+	userData.Ticket = newGUID2.String()
 
 	err = db.RegisterUser(userData)
 	if err != nil {
