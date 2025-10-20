@@ -13,8 +13,18 @@ var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{
 server.use(bodyParser.json());
 
 server.use(function(request, response, next) {
-    response.header("Access-Control-Allow-Origin", "http://localhost:10001");
-    response.header("Access-Control-Allow-Headers", "Content-Type");
+    var allowedOrigin = 'http://localhost:10001';
+    var origin = request.get('Origin');
+    if (origin && origin === allowedOrigin) {
+        response.header('Access-Control-Allow-Origin', allowedOrigin);
+        response.header('Access-Control-Allow-Headers', 'Content-Type');
+        response.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+        response.header('Vary', 'Origin');
+        // Do not set Access-Control-Allow-Credentials unless credentials are required.
+        if (request.method === 'OPTIONS') {
+            return response.sendStatus(204);
+        }
+    }
     next();
   });
 
