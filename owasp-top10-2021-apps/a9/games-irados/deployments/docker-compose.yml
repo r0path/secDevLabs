@@ -26,13 +26,12 @@ services:
    mysqldb-a10:
       container_name: mysqldb-a10
       image: mariadb:10.6.3
-      ports:
-         - "3307:3307"
+      # Do not publish the database port to the host. The application container connects over the internal Docker network using the service name (mysqldb-a10).
       environment:
-         MYSQL_ROOT_PASSWORD: root
+         MYSQL_ROOT_PASSWORD: strong_root_password_change_me
          MYSQL_DATABASE: A10
-         MYSQL_USER: user
-         MYSQL_PASSWORD: pass
+         MYSQL_USER: a10_user
+         MYSQL_PASSWORD: strong_db_password_change_me
       networks:
          - a10_net
       volumes:
