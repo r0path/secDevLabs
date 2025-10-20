@@ -171,6 +171,22 @@ We can confirm that the directory is browseable by accessing it through a web br
 
 ---
 
+Remediation
+
+To prevent directory listing and leakage of uploaded files, consider one or more of the following safe mitigations:
+
+- Disable directory listings on the web server:
+  - Apache: add `Options -Indexes` to your site configuration or create a `.htaccess` file inside `/wp-content/uploads/` with that directive.
+  - Nginx: set `autoindex off;` in the appropriate `server` or `location` block.
+- Place a default index file (for example, an empty `index.html`) inside `/wp-content/uploads/` so requests return that page instead of a file list.
+- Restrict access to sensitive uploads using access controls (authentication/authorization) or serve uploads through a controller that enforces permissions.
+- Avoid storing backups or other sensitive artifacts in web-accessible directories.
+- Regularly review uploaded content and implement virus scanning and file-type validation on upload.
+
+Applying these changes will block anonymous users from listing or downloading unintended files.
+
+---
+
 ## 👀
 
 #### Misconfigured headers give away unnecessary information about the server
