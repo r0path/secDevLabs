@@ -113,8 +113,9 @@ func RegisterUser(c echo.Context) error {
 	err = db.RegisterUser(userData)
 	if err != nil {
 		// could not register this user into MongoDB (or MongoDB err connection)
-		errorString := fmt.Sprintf("%s", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": errorString})
+			// Do not expose internal error details to the client. Return a generic message
+		// to avoid username enumeration and leaking implementation details.
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Unable to register user."})
 
 	}
 
