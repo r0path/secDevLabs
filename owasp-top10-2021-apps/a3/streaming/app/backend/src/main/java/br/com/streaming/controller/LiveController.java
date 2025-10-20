@@ -50,7 +50,7 @@ public class LiveController {
 		if (live.isPresent()) {
 			return ResponseEntity.ok().body(live.get());
 		} else {
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.notFound().build();
 		}
 	}
 
@@ -61,12 +61,12 @@ public class LiveController {
 	}
 
 	@GetMapping("/{id}/messages")
-	public List<Message> getMessagesSize(@PathVariable Long id) {
-		Live live = repository.findById(id).orElse(null);
-		if(live != null) {
-			return live.getMessages();
+	public ResponseEntity<List<Message>> getMessagesSize(@PathVariable Long id) {
+		Optional<Live> liveOpt = repository.findById(id);
+		if(liveOpt.isPresent()) {
+			return ResponseEntity.ok(liveOpt.get().getMessages());
 		} else {
-			return new ArrayList<>();
+			return ResponseEntity.notFound().build();
 		}
 	}
 
