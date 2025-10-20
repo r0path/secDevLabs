@@ -2,8 +2,11 @@
 
 from flask import Flask, request, make_response, render_template, redirect, flash
 import uuid
-import pickle
 import base64
+import json
+import hmac
+import hashlib
+import os
 app = Flask(__name__)
 
 
@@ -20,10 +23,13 @@ def login():
         if username == "admin" and password == "admin":
             token = str(uuid.uuid4().hex)
             cookie = { "username":username, "admin":True, "sessionId":token }
-            pickle_resultado = pickle.dumps(cookie)
-            encodedSessionCookie = base64.b64encode(pickle_resultado)
+            # Use a signed JSON cookie instead of insecure pickled data
+            secret = os.environ.get('SESSION_SIGNING_KEY', 'default_change_me')
+            json_cookie = json.dumps(cookie, separators=(',',':')).encode('utf-8')
+            signature = hmac.new(secret.encode('utf-8'), json_cookie, hashlib.sha256).hexdigest()
+            encodedSessionCookie = base64.b64encode(json_cookie).decode('utf-8') + '.' + signature
             resp = make_response(redirect("/user"))
-            resp.set_cookie("sessionId", encodedSessionCookie)
+            resp.set_cookie("sessionId", encodedSessionCookie, httponly=True, samesite='Lax')
             return resp
 
         else:
@@ -37,7 +43,19 @@ def userInfo():
     cookie = request.cookies.get("sessionId")
     if cookie == None:
         return "Não Autorizado!"
-    cookie = pickle.loads(base64.b64decode(cookie))
+    try:
+        # Expect format: base64(json).signature
+        if '.' not in cookie:
+            return "Não Autorizado!"
+        encoded_json, signature = cookie.rsplit('.', 1)
+        json_bytes = base64.b64decode(encoded_json)
+        secret = os.environ.get('SESSION_SIGNING_KEY', 'default_change_me')
+        expected_sig = hmac.new(secret.encode('utf-8'), json_bytes, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected_sig, signature):
+            return "Não Autorizado!"
+        cookie = json.loads(json_bytes.decode('utf-8'))
+    except Exception:
+        return "Não Autorizado!"
 
     return render_template('user.html')
     
