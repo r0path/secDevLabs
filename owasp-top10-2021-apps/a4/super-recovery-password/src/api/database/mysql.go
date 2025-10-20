@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"crypto/rand"
+	"encoding/hex"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -228,6 +230,15 @@ func CheckUserPassword(password string, hashedPassword string) error {
 	return nil
 }
 
+func generateRandomHex(n int) (string, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
 func initUsers(db *sql.DB) error {
 	users := [9]string{
 		"admin",
@@ -241,8 +252,24 @@ func initUsers(db *sql.DB) error {
 		"maria",
 	}
 	for _, u := range users {
-		hashPassword, err := utils.HashPassword(u)
-		_, err = db.Query("INSERT INTO Users (Login, Password, FirstQuestion, FirstAnswer, SecondQuestion, SecondAnswer) VALUES (?, ?, ?, ?, ?, ?)", u, hashPassword, QUESTIONS[0], "a", QUESTIONS[1], "a")
+		// Generate a strong random password and recovery answers for seeded users
+		pwd, err := generateRandomHex(16)
+		if err != nil {
+			return err
+		}
+		hashPassword, err := utils.HashPassword(pwd)
+		if err != nil {
+			return err
+		}
+		firstAns, err := generateRandomHex(16)
+		if err != nil {
+			return err
+		}
+		secondAns, err := generateRandomHex(16)
+		if err != nil {
+			return err
+		}
+		_, err = db.Query("INSERT INTO Users (Login, Password, FirstQuestion, FirstAnswer, SecondQuestion, SecondAnswer) VALUES (?, ?, ?, ?, ?, ?)", u, hashPassword, QUESTIONS[0], firstAns, QUESTIONS[1], secondAns)
 		if err != nil {
 			return err
 		}
