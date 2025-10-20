@@ -32,11 +32,11 @@ func CreateToken(creds types.Credentials) (string, error) {
 }
 
 func ExtractToken(r *http.Request) string {
-	bearToken := r.Header.Get("Authorization")
-	//normally Authorization the_token_xxx
-	strArr := strings.Split(bearToken, " ")
-	if len(strArr) == 2 {
-		return strArr[1]
+	authHeader := r.Header.Get("Authorization")
+	// Expected format: "Bearer <token>"
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return parts[1]
 	}
 	return ""
 }
