@@ -804,7 +804,21 @@ function locale_get_plural($count, $langcode = NULL) {
     if (!empty($plural_formulas[$langcode])) {
       // $n is used inside the expression in the eval().
       $n = $count;
-      $plural_indexes[$langcode][$count] = @eval('return intval(' . $plural_formulas[$langcode] . ');');
+      $formula = $plural_formulas[$langcode];
+      // Validate the plural formula to prevent code injection. Only allow digits,
+      // whitespace, the variable "n", parentheses and common numeric/ternary
+      // operators. This prevents arbitrary PHP code from being injected into
+      // the eval() call (for example via imported .po headers).
+      if (is_string($formula) && preg_match('/^[0-9n\s\(\)\?\:\+\-\*\/\%\!\=\<\>\&\|\^\~]+$/', $formula)) {
+        // $n is used inside the expression in the eval().
+        $plural_indexes[$langcode][$count] = @eval('return intval(' . $formula . ');');
+      }
+      else {
+        // Unsafe or malformed formula: fall back to a safe default (English
+        // plural rules) and log a warning instead of executing untrusted code.
+        watchdog('locale', 'Skipped unsafe plural formula for language @lang. Using English default.', array('@lang' => $langcode), WATCHDOG_WARNING);
+        $plural_indexes[$langcode][$count] = (int) ($count != 1);
+      }
     }
     // In case there is no plural formula for English (no imported translation
     // for English), use a default formula.
