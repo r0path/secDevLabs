@@ -106,9 +106,11 @@ def login():
         cookie = json.dumps(cookie_dic)
         hash_cookie = hashlib.sha256(cookie.encode('utf-8')).hexdigest()
         cookie_done = '.'.join([cookie,hash_cookie])
-        cookie_done = base64.b64encode(str(cookie_done).encode("utf-8"))
+        cookie_done = base64.b64encode(str(cookie_done).encode("utf-8")).decode("utf-8")
         resp = make_response("Logged in!")
-        resp.set_cookie("sessionId", cookie_done)
+        # Set cookie with expiration and security attributes. Max-Age set to 3600s (1 hour).
+        secure_flag = request.is_secure
+        resp.set_cookie("sessionId", cookie_done, max_age=3600, httponly=True, secure=secure_flag, samesite='Lax')
         return resp
 
 
