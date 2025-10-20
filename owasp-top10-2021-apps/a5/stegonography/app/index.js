@@ -63,9 +63,21 @@ router.get("/login", function(req,res) {
 
 // User login route, submit POST request to server
 router.post("/login", function(req,res)  {
+    // Extract and validate inputs to prevent NoSQL injection
+    if (!req.body || !req.body.user) {
+        return res.status(400).send('Invalid request');
+    }
     var username = req.body.user.name;
     var password = req.body.user.password;
-    
+
+    // Ensure username and password are plain strings (prevent MongoDB operator injection)
+    if (typeof username !== 'string' || typeof password !== 'string') {
+        return res.status(400).send('Invalid username or password format');
+    }
+    // Basic sanitization: trim inputs and limit length
+    username = username.trim().slice(0, 128);
+    password = password.trim().slice(0, 128);
+
     // Verifies user credentials
     function VerifiesUser(callback) {
         MongoClient.connect(url, function(err, db) {
