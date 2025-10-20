@@ -83,12 +83,16 @@ func Login(c echo.Context) error {
 	userDataResult, err := db.GetUserData(userDataQuery)
 	if err != nil {
 		// could not find this user in MongoDB (or MongoDB err connection)
+		// Add a small delay to slow automated brute-force or credential-stuffing attempts.
+		time.Sleep(1 * time.Second)
 		return c.JSON(http.StatusForbidden, map[string]string{"result": "error", "details": "Error login."})
 	}
 
 	validPass := pass.CheckPass(userDataResult.Password, loginAttempt.Password)
 	if !validPass {
 		// wrong password
+		// Add a small delay to slow automated brute-force or credential-stuffing attempts.
+		time.Sleep(1 * time.Second)
 		return c.JSON(http.StatusForbidden, map[string]string{"result": "error", "details": "Error login."})
 	}
 
