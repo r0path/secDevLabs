@@ -33,7 +33,7 @@
 
             request.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    var div = document.getElementById('data').innerHTML = this.responseText;
+                    var div = document.getElementById('data').textContent = this.responseText;
                 }
             };
 
