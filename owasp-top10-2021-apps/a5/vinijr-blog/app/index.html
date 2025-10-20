@@ -16,7 +16,7 @@
           if(xmlhttp.readyState == 4){
               console.log(xmlhttp.readyState);
               console.log(xmlhttp.responseText);
-              document.getElementById('errorMessage').innerHTML = xmlhttp.responseText;
+              document.getElementById('errorMessage').textContent = xmlhttp.responseText;
 
           }
       }
