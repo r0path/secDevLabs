@@ -18,12 +18,12 @@ class DataBase:
 
     def get_game_coupon(self, coupon, user):
         try:
-            self.c.execute('UPDATE coupons  SET valid = %s, user = %s WHERE coupon = %s AND valid = %s', [ 0,user, coupon, 1])
+            self.c.execute('UPDATE coupons SET valid = %s WHERE coupon = %s AND user = %s AND valid = %s', [ 0, coupon, user, 1])
             rows = self.c.rowcount
             self.db.commit()
         except (AttributeError, MySQLdb.OperationalError):
             self.connect()
-            self.c.execute('UPDATE coupons  SET valid = %s, user = %s WHERE coupon = %s AND valid = %s', [ 0, user, coupon, 1])
+            self.c.execute('UPDATE coupons SET valid = %s WHERE coupon = %s AND user = %s AND valid = %s', [ 0, coupon, user, 1])
             rows = self.c.rowcount
             # self.c.execute('UPDATE coupons as t, (SELECT * FROM coupons WHERE coupon = %s AND valid = %s ) as temp SET t.valid = %s WHERE t.coupon = temp.coupon', [coupon, 1, 0])
             self.db.commit()
