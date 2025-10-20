@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -48,9 +49,15 @@ func TokenValid(r *http.Request) (types.Claims, error) {
 	token := ExtractToken(r)
 	if token == "" {
 		log.Println("No token!")
-		return claims, nil
+		// If there's no token, return an explicit error so callers can't assume empty claims are valid
+		return claims, errors.New("authorization token missing")
 	}
+
+	// Ensure token has the expected three parts before attempting to decode
 	t := strings.Split(token, ".")
+	if len(t) < 2 {
+		return claims, errors.New("invalid token format")
+	}
 
 	h, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[0])
 	if err != nil {
