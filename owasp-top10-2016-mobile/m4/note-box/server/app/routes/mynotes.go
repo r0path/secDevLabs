@@ -12,7 +12,11 @@ import (
 func MyNotes(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	username := claims["name"].(string)
+	nameVal, ok := claims["name"]
+	username, okStr := nameVal.(string)
+	if !ok || !okStr || username == "" {
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid token claims")
+	}
 
 	notes := db.FindNotes(username)
 
