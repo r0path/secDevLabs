@@ -12,3 +12,5 @@ require (
 	golang.org/x/sys v0.0.0-20190108104531-7fbe1cd0fcc2 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
+
+replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v3.2.1+incompatible
