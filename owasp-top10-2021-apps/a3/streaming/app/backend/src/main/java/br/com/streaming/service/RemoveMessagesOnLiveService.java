@@ -13,8 +13,9 @@ public class RemoveMessagesOnLiveService {
 	private LiveRepository liveRepository;
 
 	public void remove(Long id) {
-		Live live = liveRepository.findById(id).orElse(null);
-		live.removeMessages();
-		liveRepository.save(live);
+		liveRepository.findById(id).ifPresent(live -> {
+			live.removeMessages();
+			liveRepository.save(live);
+		});
 	}
 }
