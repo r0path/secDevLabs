@@ -7,6 +7,31 @@ import base64
 app = Flask(__name__)
 
 
+# Set secure response headers
+@app.after_request
+def set_security_headers(response):
+    """Apply common security headers to all responses.
+    - Content-Security-Policy (CSP): conservative default limiting sources to self. Adjust if your app loads resources from CDNs.
+    - X-Content-Type-Options: nosniff to prevent MIME sniffing.
+    - X-Frame-Options: SAMEORIGIN to mitigate clickjacking.
+    - Strict-Transport-Security (HSTS): applied only when not in debug and request is secure (or X-Forwarded-Proto indicates https).
+    """
+    # Content Security Policy: adjust as needed for your application's external resources
+    response.headers.setdefault("Content-Security-Policy", "default-src 'self';")
+    # Prevent MIME type sniffing
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    # Prevent clickjacking
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    # Set HSTS only when not in debug mode and over HTTPS
+    try:
+        if not app.debug and (request.is_secure or request.headers.get('X-Forwarded-Proto', '') == 'https'):
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    except Exception:
+        # If request context not available, skip HSTS
+        pass
+    return response
+
+
 @app.route("/")
 def ola():
     return render_template('index.html')
