@@ -4,7 +4,7 @@
 #
 
 # API environment variables
-M4_SECRET=$RANDOM$RANDOM
+M4_SECRET=$(if command -v openssl >/dev/null 2>&1; then openssl rand -hex 32; else head -c 32 /dev/urandom | base64 | tr -d '\n'; fi)
 
 echo "#api.env" > deployments/api.env
 echo "M4_SECRET=$M4_SECRET" >> deployments/api.env
