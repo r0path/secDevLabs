@@ -139,7 +139,9 @@ function verifyJWT(req, res, next){
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
         if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
         
-        req.userId = decoded.id;
+        // Map token identity into req.userId. Tokens issued by this app include { username },
+        // but older tokens or variants might include id or userId. Prefer username, then fall back.
+        req.userId = decoded.username || decoded.id || decoded.userId;
         next();
       });
 }
