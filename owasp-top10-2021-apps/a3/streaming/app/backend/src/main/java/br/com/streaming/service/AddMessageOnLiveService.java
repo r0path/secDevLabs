@@ -28,8 +28,14 @@ public class AddMessageOnLiveService {
 		User user = userRepository.findByUsername(messageDto.username).orElse(null);
 		
 		if(user == null) {
-			user = new User(messageDto.username, messageDto.username);
-			userRepository.save(user);
+			// Prevent client-controlled username creation/impersonation.
+			// Use a generic anonymous account for unauthenticated or unknown users.
+			final String ANONYMOUS_USERNAME = "anonymous";
+			user = userRepository.findByUsername(ANONYMOUS_USERNAME).orElse(null);
+			if (user == null) {
+				user = new User(ANONYMOUS_USERNAME, "Anonymous");
+				userRepository.save(user);
+			}
 		}
 
 		Message message = new Message(user, messageDto.content);
