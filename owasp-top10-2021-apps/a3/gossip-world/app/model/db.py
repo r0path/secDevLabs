@@ -65,12 +65,12 @@ class DataBase:
     def get_latest_gossips(self):
         try:
             self.c.execute(
-                'SELECT id, text, author, title, subtitle, date FROM gossips')
+                'SELECT id, text, author, title, subtitle, date FROM gossips ORDER BY date DESC LIMIT 10')
             gossips = self.c.fetchall()
         except (AttributeError, MySQLdb.OperationalError):
             self.connect()
             self.c.execute(
-                'SELECT id, text, author, title, subtitle, date FROM gossips LIMIT')
+                'SELECT id, text, author, title, subtitle, date FROM gossips ORDER BY date DESC LIMIT 10')
             gossips = self.c.fetchall()
         except MySQLdb.Error as e:
             try:
