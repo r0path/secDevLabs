@@ -46,18 +46,14 @@ func AuthenticateUser(user string, pass string) (bool, error) {
 	}
 	defer dbConn.Close()
 
-	query := fmt.Sprint("select * from Users where username = '" + user + "'")
-	rows, err := dbConn.Query(query)
+	row := dbConn.QueryRow("select ID, Username, Password from Users where username = ?", user)
+	loginAttempt := types.LoginAttempt{}
+	err = row.Scan(&loginAttempt.ID, &loginAttempt.User, &loginAttempt.Pass)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
 	if err != nil {
 		return false, err
-	}
-	defer rows.Close()
-	loginAttempt := types.LoginAttempt{}
-	for rows.Next() {
-		err := rows.Scan(&loginAttempt.ID, &loginAttempt.User, &loginAttempt.Pass)
-		if err != nil {
-			return false, err
-		}
 	}
 	if hash.CheckPasswordHash(pass, loginAttempt.Pass) {
 		return true, nil
