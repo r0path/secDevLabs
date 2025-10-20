@@ -77,9 +77,14 @@ func main() {
 	echoInstance.GET("/login", api.PageLogin)
 	echoInstance.GET("/", api.Root)
 	r := echoInstance.Group("/game")
+	secret := os.Getenv("SECRET_KEY")
+	if secret == "" {
+		fmt.Println("[X] ERROR: SECRET_KEY environment variable is not set")
+		os.Exit(1)
+	}
 	config := middleware.JWTConfig{
 		TokenLookup: "cookie:sessionIDsnake",
-		SigningKey:  []byte(os.Getenv("SECRET_KEY")),
+		SigningKey:  []byte(secret),
 	}
 	r.Use(middleware.JWTWithConfig(config))
 
