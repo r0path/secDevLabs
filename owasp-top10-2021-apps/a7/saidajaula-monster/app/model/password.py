@@ -1,6 +1,6 @@
 import hashlib
 import binascii
-
+import hmac
 
 class Password:
     def __init__(self, password, username, guid):
@@ -21,4 +21,9 @@ class Password:
         return str(binascii.hexlify(dk))
 
     def _compare_password(self, password_1, password_2):
-        return password_1 == password_2
+        # Use constant-time comparison to mitigate timing attacks
+        # Ensure both inputs are of the same type (str) and encoded to bytes
+        # if necessary before comparison. The stored hashed password is produced
+        # by binascii.hexlify(dk) and then converted to str(), so we compare the
+        # string representations directly using hmac.compare_digest.
+        return hmac.compare_digest(password_1, password_2)
