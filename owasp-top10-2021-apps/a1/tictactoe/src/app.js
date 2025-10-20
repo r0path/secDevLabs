@@ -172,7 +172,17 @@ app.post('/login', async (req, res) => {
     });
     
     res
-        .cookie('tictacsession', token)
+        .cookie('tictacsession', token, {
+            // Keep httpOnly false for now because client-side scripts in /assets/js read the cookie.
+            // After migrating client logic to use Authorization headers or other mechanisms, set httpOnly: true.
+            httpOnly: false,
+            // Only mark as secure when the request is over HTTPS to avoid breaking local HTTP development on localhost.
+            secure: (req.secure || req.headers['x-forwarded-proto'] === 'https'),
+            // Provide a SameSite policy to mitigate CSRF and cross-site leakage.
+            sameSite: 'Lax',
+            // Align cookie lifetime with the JWT expiry (1 hour).
+            maxAge: 3600 * 1000
+        })
         .redirect('/game')
 });
 
