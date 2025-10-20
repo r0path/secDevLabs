@@ -138,8 +138,6 @@ class DataBase:
             except IndexError:
                 message = 'MySQL Error: %s' % str(e)
                 return message, 0
-        if comments == ():
-            return None, 1
         return comments, 1
 
     def post_comment(self, author, comment, gossip_id, date):
