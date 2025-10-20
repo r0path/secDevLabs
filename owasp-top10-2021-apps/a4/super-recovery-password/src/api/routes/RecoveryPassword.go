@@ -23,8 +23,18 @@ func RecoveryPassword(c echo.Context) (err error) {
 		SecondAnswer: u.SecondAnswer,
 	}
 
+	// reject empty submitted answers to avoid accepting blank answers
+	if strings.TrimSpace(recoveryPasswordAnswers.FirstAnswer) == "" || strings.TrimSpace(recoveryPasswordAnswers.SecondAnswer) == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"message": "answers cannot be empty"})
+	}
+
 	answers, err := database.RecoveryPassword(recoveryPasswordAnswers.Login, recoveryPasswordAnswers.FirstAnswer, recoveryPasswordAnswers.SecondAnswer)
 	if err != nil {
+		return c.JSON(http.StatusConflict, echo.Map{"message": "incorrect answers!"})
+	}
+
+	// reject cases where stored answers are empty to prevent empty-match bypass
+	if strings.TrimSpace(answers.FirstAnswer) == "" || strings.TrimSpace(answers.SecondAnswer) == "" {
 		return c.JSON(http.StatusConflict, echo.Map{"message": "incorrect answers!"})
 	}
 
