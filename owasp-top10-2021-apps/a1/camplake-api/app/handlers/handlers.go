@@ -130,8 +130,8 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Incorrect username or password"})
 	}
 
-	messageLogon := fmt.Sprintf("Hello, %s! This is your token: %s\n", userDataResult.Username, token)
-	return c.String(http.StatusOK, messageLogon)
+	messageLogon := fmt.Sprintf("Hello, %s!", userDataResult.Username)
+	return c.JSON(http.StatusOK, map[string]string{"result": "success", "message": messageLogon})
 }
 
 func NewPost(c echo.Context) error {
