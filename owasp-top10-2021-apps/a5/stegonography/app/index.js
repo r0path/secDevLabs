@@ -123,8 +123,21 @@ router.get("/", function(req,res) {
 
 // Returns the error web-page if none other is found
 app.use('/', router);
+// 404 handler - avoid rendering missing template to prevent leakage
 app.use(function(req, res, next) {
-    res.status(404).render("error.html")
+    const path = require('path');
+    const fs = require('fs');
+    const errorPath = path.join(__dirname, 'static', 'views', 'error.html');
+    try {
+        if (fs.existsSync(errorPath)) {
+            return res.status(404).sendFile(errorPath);
+        } else {
+            return res.status(404).send('404 Not Found');
+        }
+    } catch (e) {
+        // Fallback to generic message without leaking internal error info
+        return res.status(404).send('404 Not Found');
+    }
 });
 // Listen on port 10006
 app.listen(10006, () => {
