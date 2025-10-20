@@ -76,10 +76,12 @@ func RecoveryPassword(login string, firstAnswer string, secondAnswer string) (ty
 		return types.RecoveryPasswordAnswers{}, err
 	}
 
-	result, err := db.Query("SELECT Login, FirstAnswer, SecondAnswer FROM Users WHERE Login = ?", login)
+	// Verify provided answers in the query so the database enforces correctness atomically
+	result, err := db.Query("SELECT Login, FirstAnswer, SecondAnswer FROM Users WHERE Login = ? AND FirstAnswer = ? AND SecondAnswer = ?", login, firstAnswer, secondAnswer)
 	if err != nil {
 		return types.RecoveryPasswordAnswers{}, err
 	}
+	defer result.Close()
 
 	recoveryPasswordAnswers := types.RecoveryPasswordAnswers{}
 
