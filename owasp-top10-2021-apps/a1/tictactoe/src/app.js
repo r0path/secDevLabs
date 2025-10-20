@@ -54,7 +54,8 @@ app.get('/healthcheck', (req, res) => {
 })
 
 app.post('/game', verifyJWT, async (req, res) => {
-    const user = req.body.user
+    // bind user to authenticated identity, ignore client-supplied username
+    const user = req.username
     const result = req.body.result
     let statistics = await db.getStatisticsFromUser(user)
     if (statistics === null){
@@ -119,7 +120,8 @@ app.post('/create', async (req, res) => {
 });
 
 app.get('/statistics/data', verifyJWT, async (req, res) => {
-    const user = req.query.user
+    // serve statistics for authenticated user only
+    const user = req.username
 
     let statistics = await db.getStatisticsFromUser(user)
     if (statistics === undefined){
@@ -187,6 +189,10 @@ function verifyJWT(req, res, next){
         if (err){
             return res
                 .sendFile(path.join(__dirname+'/public/views/error.html'))
+        }
+        // bind authenticated username to request to prevent client-supplied identity
+        if (decoded && decoded.username){
+            req.username = decoded.username;
         }
         next();
     });
