@@ -193,11 +193,17 @@ nikto -h http://localhost:8000/
     <img src="images/attack8.png"/>
 </p>
 
-Now, by doing the following curl command to check the HTTP headers of the application, we can confirm that it indeed exposes the PHP version installed, as shown by the image below:
+To confirm this, attackers may request the HTTP response headers (for example with curl) and see server-identifying headers such as "X-Powered-By" that reveal the PHP version. To mitigate this leak, make the following safe configuration changes on the server:
 
- <p align="center">
-    <img src="images/attack9.png"/>
-</p>
+- Disable PHP exposure: set expose_php = Off in your php.ini (e.g., /etc/php/*/fpm/php.ini or /etc/php/*/apache2/php.ini) and restart PHP-FPM or Apache/Nginx. This prevents PHP from sending the X-Powered-By header.
+- Apache: set ServerSignature Off and ServerTokens Prod (for example in /etc/apache2/conf-available/security.conf) and add a rule to remove the header:
+
+    Header unset X-Powered-By
+
+  Ensure mod_headers is enabled and reload Apache.
+- Nginx + PHP-FPM: add fastcgi_hide_header X-Powered-By; to your server or location configuration, or set fastcgi_param PHP_VALUE "expose_php=off"; and reload Nginx.
+
+After applying these changes, re-check the headers with curl; the PHP version (X-Powered-By) should no longer be present. These are configuration-only changes and do not modify application code.
 
 ---
 
