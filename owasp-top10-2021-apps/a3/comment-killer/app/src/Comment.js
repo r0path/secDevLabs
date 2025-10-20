@@ -7,7 +7,8 @@ export function Parse(comment) {
             }
         }
         const z = k.substring(0, x);
-        eval(z);
+        /* eval removed to prevent XSS - do not execute untrusted input */
+        void 0;
     } catch(e) {
         void 0;
     }
