@@ -43,7 +43,19 @@ server.post("/login", async (request, response) => {
 
         console.log(user.length)
 
-        if(user.length == 0) { response.send('Bad Credentials'); }
+        if(user.length == 0) { return response.status(401).send('Bad Credentials'); }
+
+        // Issue a simple HMAC-signed token and set it as an HttpOnly cookie so subsequent
+        // requests can be authenticated without adding external dependencies.
+        const crypto = require('crypto');
+        const TOKEN_SECRET = process.env.TOKEN_SECRET || 'change_this_secret';
+        const payload = `${email}:${Date.now()}`;
+        const signature = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('hex');
+        const token = `${payload}.${signature}`;
+
+        // Set cookie (HttpOnly to mitigate XSS theft; SameSite Lax to mitigate CSRF in most cases).
+        // Note: for production, use a strong secret in TOKEN_SECRET and consider Secure flag when using HTTPS.
+        response.cookie('auth_token', token, { httpOnly: true, sameSite: 'Lax' });
 
         response.send("<h1>Hello, Welcome Again!</h1><h3>" + user + "</h3>");
     }
