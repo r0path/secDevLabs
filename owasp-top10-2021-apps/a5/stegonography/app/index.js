@@ -91,7 +91,7 @@ router.post("/login", function(req,res)  {
             });
             res.cookie('nodejsSessionToken', token).redirect(301, "/admin");
         } else {
-            res.status(500).send('Invalid username or password!').redirect(301, "/logout");
+            res.status(500).send('Invalid username or password!');
         }
     });
 })
