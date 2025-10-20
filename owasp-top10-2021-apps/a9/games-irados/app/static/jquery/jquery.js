@@ -1719,7 +1719,11 @@ Expr = Sizzle.selectors = {
 			var pattern = classCache[ className + " " ];
 
 			return pattern ||
-				(pattern = new RegExp( "(^|" + whitespace + ")" + className + "(" + whitespace + "|$)" )) &&
+				(function(){
+					// Escape regex metacharacters in className to prevent ReDoS when constructing RegExp from user-controlled input
+					var safeClass = className.replace(/([.*+?^${}()|[\\]\\\\])/g, "\\$1");
+					return (pattern = new RegExp( "(^|" + whitespace + ")" + safeClass + "(" + whitespace + "|$)" ));
+				})() &&
 				classCache( className, function( elem ) {
 					return pattern.test( typeof elem.className === "string" && elem.className || typeof elem.getAttribute !== "undefined" && elem.getAttribute("class") || "" );
 				});
