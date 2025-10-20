@@ -19,6 +19,7 @@
                 <div id="login">
                     <!-- Login form -->
                     <form class="col s12" action="/login" method="post" id="login">
+                            <input type="hidden" name="csrf_token" value="{{index . \"csrf_token\"}}">
                             <div class="row">
                                 <div class="input-field col s6 offset-s3">
                                     <i class="material-icons prefix">account_circle</i>
@@ -43,6 +44,7 @@
                 <div id="register">
                         <!-- Register form -->
                         <form class="col s12" action="/register" method="post" id="register">
+                                <input type="hidden" name="csrf_token" value="{{index . \"csrf_token\"}}">
                                 <div class="row">
                                     <div class="input-field col s6 offset-s3">
                                         <i class="material-icons prefix">account_circle</i>
