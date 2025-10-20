@@ -44,6 +44,14 @@ func main() {
 	// Healthcheck route
 	e.GET("/healthcheck", routes.Healthcheck)
 
+	// Start server with TLS if cert and key are provided via environment variables.
+	cert := os.Getenv("M4_TLS_CERT")
+	key := os.Getenv("M4_TLS_KEY")
+	if cert != "" && key != "" {
+		log.Println("Starting server with TLS on :9051")
+		e.Logger.Fatal(e.StartTLS(":9051", cert, key))
+	}
+	log.Println("TLS certificates not provided; starting server without TLS (insecure). Set M4_TLS_CERT and M4_TLS_KEY to enable TLS.")
 	e.Logger.Fatal(e.Start(":9051"))
 
 	defer func() {
