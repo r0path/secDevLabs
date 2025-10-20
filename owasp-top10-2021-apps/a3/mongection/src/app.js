@@ -65,9 +65,8 @@ server.post("/register", async (request, response) => {
         else {
             const user = await db.register({name, email, password});
 
-            if(!user) { response.send('User Already Exists'); }
-
-            response.send("<h1>Welcome to Mongection System</h1><h3>" + user.email + "</h3>");
+            // Always return a generic response to prevent user enumeration.
+            response.send("<h1>Registration submitted</h1><p>If an account exists for this email you will receive an email with next steps.</p>");
         }
         
     }
