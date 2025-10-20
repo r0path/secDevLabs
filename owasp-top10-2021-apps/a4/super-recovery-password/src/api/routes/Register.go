@@ -16,10 +16,15 @@ func Register(c echo.Context) (err error) {
 		return
 	}
 	u.Login = strings.ToLower(u.Login)
+	if u.Password != u.RepeatPassword {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "passwords do not match",
+		})
+	}
 	user := types.UserRegister{
 		Login:          u.Login,
 		Password:       u.Password,
-		RepeatPassword: u.Password,
+		RepeatPassword: u.RepeatPassword,
 		FirstQuestion:  u.FirstQuestion,
 		FirstAnswer:    u.FirstAnswer,
 		SecondQuestion: u.SecondQuestion,
