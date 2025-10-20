@@ -122,7 +122,8 @@ function setPoint(name){
         id = 'fry'
     }
     const p = document.querySelector(`#${id}Points`)
-    p.innerHTML = parseInt(p.innerHTML, 10) + 1
+    const current = parseInt(p.textContent, 10) || 0
+    p.textContent = current + 1
 }
 
 function HashGame(){
