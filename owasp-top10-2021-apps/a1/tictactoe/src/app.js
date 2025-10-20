@@ -21,7 +21,13 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'));
 
 app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:10005");
+    const allowedOrigins = ['http://localhost:10005'];
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+        // Only echo back allowed origins and add Vary to prevent caching issues
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    }
     next();
   });
 
