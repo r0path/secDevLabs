@@ -21,11 +21,18 @@ class _AuthScreenState extends State<AuthScreen> {
   final _storage = new FlutterSecureStorage();
 
   void _login(BuildContext context, String username, String password) async {
+    // Trim and validate inputs to prevent empty/whitespace-only usernames/passwords
+    username = username?.trim() ?? '';
+    password = password?.trim() ?? '';
+    if (username.isEmpty || password.isEmpty) {
+      showAlertDialog(context, 'Login Error', 'Username and password must not be empty.');
+      return;
+    }
     // set up POST request arguments
     String host = Platform.isAndroid ? "10.0.2.2" : "localhost";
     String url = 'http://$host:9051/login';
     Map<String, String> headers = {"Content-type": "application/json"};
-    String json = '{"username": "$username", "password": "$password"}';
+    String json = jsonEncode({'username': username, 'password': password});
     // make POST request
     Response response = await post(url, headers: headers, body: json);
     // check the status code for the result
