@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m4/note-box/server/app/db"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m4/note-box/server/app/routes"
@@ -18,6 +19,10 @@ func main() {
 	}
 
 	jwtSecret := os.Getenv("M4_SECRET")
+	// Validate the JWT secret: it must be set and non-empty.
+	if strings.TrimSpace(jwtSecret) == "" {
+		log.Fatal("M4_SECRET environment variable must be set and non-empty")
+	}
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
 	e := echo.New()
