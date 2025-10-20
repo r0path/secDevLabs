@@ -89,7 +89,7 @@ router.post("/login", function(req,res)  {
             var token = jwt.sign({ username }, process.env.SECRET, {
                 expiresIn: 300 // Token expires in 5 minutes
             });
-            res.cookie('nodejsSessionToken', token).redirect(301, "/admin");
+            res.cookie('nodejsSessionToken', token, { httpOnly: true, sameSite: 'Strict', secure: (process.env.NODE_ENV === 'production') }).redirect(301, "/admin");
         } else {
             res.status(500).send('Invalid username or password!').redirect(301, "/logout");
         }
