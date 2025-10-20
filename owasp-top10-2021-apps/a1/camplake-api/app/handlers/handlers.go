@@ -62,8 +62,9 @@ func NewUser(c echo.Context) error {
 				"method": "NewUserRegisterUser",
 				"error":  err,
 			}).Error()
-		errorString := fmt.Sprintf("%s", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": errorString})
+		// Do not expose internal error details to the client. Return a generic message
+		// to avoid username enumeration and leaking implementation details.
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Unable to register user."})
 	}
 
 	return c.String(http.StatusCreated, "Register: success!\n")
