@@ -19,7 +19,7 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie.Name = "sessionIDa5"
 	cookie.Value = jwt
 	c.SetCookie(cookie)
-	return c.String(http.StatusOK, "")
+	return nil
 }
 
 // ReadCookie reads a cookie from echo Context.
