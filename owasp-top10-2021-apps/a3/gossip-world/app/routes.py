@@ -90,6 +90,9 @@ def login():
                 flash('User not found or wrong password', 'danger')
                 return render_template('login.html')
 
+        # Prevent session fixation by clearing existing session data and regenerating CSRF token
+        session.clear()
+        generate_csrf_token()
         session['username'] = username
         return redirect('/gossip')
     else:
