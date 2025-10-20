@@ -27,8 +27,11 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:40001"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions},
+		AllowOrigins:     []string{"http://localhost:40001"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: false,
+		MaxAge:           600,
 	}))
 
 	e.GET("/healthcheck", routes.Healthcheck)
