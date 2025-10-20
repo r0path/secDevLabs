@@ -141,7 +141,7 @@ def newuser():
 def all_gossips():
     search = request.args.get('search')
     search_flag = 0
-    if search is not None:
+    if search and search.strip():
         gossips, success = database.search_gossips(search)
         search_flag = 1
     else:
