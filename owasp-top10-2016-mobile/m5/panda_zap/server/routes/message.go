@@ -45,7 +45,13 @@ func (es *EchoServer) UpdateMessages(c echo.Context) error {
 			map[string]string{"result": "fail", "message": err.Error()})
 	}
 
-	userFromDB, err := es.Database.GetUser(incomingUser.Name)
+	username := es.Auth.GetUser(c)
+
+	if incomingUser.Name != "" && incomingUser.Name != username {
+		es.Logger.Warn(fmt.Sprintf("Authenticated user '%s' does not match incoming user '%s', overriding incoming name", username, incomingUser.Name))
+	}
+
+	userFromDB, err := es.Database.GetUser(username)
 	if err != nil {
 		es.Logger.Error("Error getting user from database: ", err)
 		return c.JSON(http.StatusInternalServerError,
