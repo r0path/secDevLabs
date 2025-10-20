@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"regexp"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/globocom/secDevLabs/owasp-top10-2021-apps/a1/ecommerce-api/app/db"
@@ -107,8 +108,18 @@ func RegisterUser(c echo.Context) error {
 	newGUID1 := uuid.Must(uuid.NewRandom())
 	userData.UserID = newGUID1.String()
 
+	// Sanitize username to prevent stored XSS in the generated ticket.
+	re := regexp.MustCompile("[^A-Za-z0-9_-]+")
+	safeUsername := re.ReplaceAllString(userData.Username, "")
+	if len(safeUsername) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Invalid username."})
+	}
+	if len(safeUsername) > 32 {
+		safeUsername = safeUsername[:32]
+	}
+
 	newGUID2 := uuid.Must(uuid.NewRandom())
-	userData.Ticket = fmt.Sprintf("%s-%s", userData.Username, newGUID2)
+	userData.Ticket = fmt.Sprintf("%s-%s", safeUsername, newGUID2)
 
 	err = db.RegisterUser(userData)
 	if err != nil {
