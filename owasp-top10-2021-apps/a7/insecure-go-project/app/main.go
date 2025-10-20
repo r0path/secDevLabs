@@ -45,7 +45,15 @@ func main() {
 
 	echoInstance.GET("/healthcheck", api.HealthCheck)
 	APIport := fmt.Sprintf(":%d", getAPIPort())
-	echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+	certFile := os.Getenv("API_TLS_CERT")
+	keyFile := os.Getenv("API_TLS_KEY")
+	if certFile != "" && keyFile != "" {
+		fmt.Println("[*] TLS certs found. Starting HTTPS server on", APIport)
+		echoInstance.Logger.Fatal(echoInstance.StartTLS(APIport, certFile, keyFile))
+	} else {
+		fmt.Println("[!] TLS certs not provided. Starting HTTP server on", APIport)
+		echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+	}
 }
 
 func errorAPI(err error) {
