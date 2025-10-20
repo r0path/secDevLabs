@@ -36,6 +36,14 @@ func PostComments(c echo.Context) error {
 			map[string]string{"result": "fail", "message": err.Error()})
 	}
 
+	// Protect against JSON "null" or other inputs that leave the decoded pointer nil.
+	if incomingComment == nil {
+		errMsg := "invalid request payload"
+		fmt.Println(errMsg)
+		return c.JSON(http.StatusBadRequest,
+			map[string]string{"result": "fail", "message": errMsg})
+	}
+
 	comments.Text = append(comments.Text, incomingComment.Text)
 
 	fmt.Println("New comment added")
