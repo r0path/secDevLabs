@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -38,9 +39,15 @@ func main() {
 	e.POST("/recovery", routes.RecoveryPassword)
 
 	r := e.Group("/reset")
+	jwtSecret := strings.TrimSpace(os.Getenv("JWT_SECRET"))
+	if jwtSecret == "" {
+		fmt.Println("[x] Fatal: JWT_SECRET must be set and non-empty")
+		os.Exit(1)
+	}
+
 	config := middleware.JWTConfig{
 		Claims:     &services.JwtCustomClaims{},
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
+		SigningKey: []byte(jwtSecret),
 	}
 
 	r.Use(middleware.JWTWithConfig(config))
