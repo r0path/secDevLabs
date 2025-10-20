@@ -2,6 +2,8 @@ package routes
 
 import (
 	"net/http"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m2/cool_games/server/app/db"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m2/cool_games/server/app/types"
@@ -16,20 +18,32 @@ func Register(c echo.Context) error {
 		return err
 	}
 
-	attemptUsername := u.Username
-	attemptPassword := u.Password
+	// Normalize and validate username/password
+	username := strings.TrimSpace(u.Username)
+	username = strings.ToLower(username)
+	password := u.Password
 
-	_, err := db.FindOneUser(attemptUsername)
+	// Validate username length (3-30 characters)
+	if username == "" || utf8.RuneCountInString(username) < 3 || utf8.RuneCountInString(username) > 30 {
+		return c.JSON(http.StatusBadRequest, "Username must be between 3 and 30 characters and not empty")
+	}
+
+	// Validate password length (8-128 characters)
+	if password == "" || utf8.RuneCountInString(password) < 8 || utf8.RuneCountInString(password) > 128 {
+		return c.JSON(http.StatusBadRequest, "Password must be between 8 and 128 characters and not empty")
+	}
+
+	_, err := db.FindOneUser(username)
 	if err == nil {
 		return c.JSON(http.StatusConflict, "User already exists!")
 	}
 
-	hashedPassword, salt, err := util.Hash(attemptPassword)
+	hashedPassword, salt, err := util.Hash(password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Error hashing user password, please try again later")
 	}
 
-	newUser := types.User{attemptUsername, hashedPassword, salt}
+	newUser := types.User{username, hashedPassword, salt}
 
 	err = db.InsertOneUser(newUser)
 	if err != nil {
