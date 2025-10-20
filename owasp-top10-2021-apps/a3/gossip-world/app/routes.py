@@ -79,7 +79,24 @@ def root():
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
-        psw = Password(request.form.get('password').encode('utf-8'))
+        password = request.form.get('password')
+
+        # Normalize username to match registration behavior
+        if username is None:
+            username = ''
+        else:
+            username = username.strip()
+
+        if not username or not password:
+            flash('All fields are required', 'danger')
+            return render_template('login.html')
+
+        # Basic validation to reject control characters and enforce bounds
+        if not username.isprintable() or len(username) < 3 or len(username) > 30:
+            flash('Invalid username or password', 'danger')
+            return render_template('login.html')
+
+        psw = Password(password.encode('utf-8'))
         user_password, success = database.get_user_password(username)
 
         if not success or user_password is None or \
@@ -110,8 +127,25 @@ def newuser():
         psw1 = request.form.get('password1')
         psw2 = request.form.get('password2')
 
-        if username == '' or psw1 == '' or psw2 == '':
+        # Normalize and validate username: strip leading/trailing whitespace and reject empty or non-printable names
+        if username is None:
+            username = ''
+        else:
+            username = username.strip()
+
+        # Ensure all fields are present
+        if not username or not psw1 or not psw2:
             flash('All fields are required', 'danger')
+            return redirect('/register')
+
+        # reject usernames with non-printable/control characters
+        if not username.isprintable():
+            flash('Invalid characters in username', 'danger')
+            return redirect('/register')
+
+        # enforce reasonable length bounds
+        if len(username) < 3 or len(username) > 30:
+            flash('Username must be between 3 and 30 characters', 'danger')
             return redirect('/register')
 
         # username = username.encode('utf-8')
