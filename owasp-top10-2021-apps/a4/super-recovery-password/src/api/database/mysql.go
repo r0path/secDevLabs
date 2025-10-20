@@ -56,7 +56,7 @@ func ChangePassword(login string, password string, repeatPassword string) error 
 		return err
 	}
 
-	_, err = db.Query("UPDATE Users SET Password = ? WHERE Login = ?", passwordHashed, login)
+	_, err = db.Exec("UPDATE Users SET Password = ? WHERE Login = ?", passwordHashed, login)
 	if err != nil {
 		return err
 	}
