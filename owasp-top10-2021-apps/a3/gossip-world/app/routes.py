@@ -170,6 +170,13 @@ def gossip(id):
             flash('All fields are required', 'danger')
             return redirect('/gossip/{}'.format(id))
 
+        # Verify the gossip exists before allowing a comment to be posted
+        gossip_obj, g_success = database.get_gossip(id)
+        if not g_success or gossip_obj is None:
+            error('gossip', 'Gossip not found', session.get('username'))
+            flash('Gossip not found', 'danger')
+            return redirect('/gossip')
+
         message, success = database.post_comment(user, comment, id, date)
         if not success:
             error('gossip', message, session.get('username'))
