@@ -43,12 +43,15 @@ server.post("/login", async (request, response) => {
 
         console.log(user.length)
 
-        if(user.length == 0) { response.send('Bad Credentials'); }
+        if(user.length == 0) { return response.status(401).send('Bad Credentials'); }
 
-        response.send("<h1>Hello, Welcome Again!</h1><h3>" + user + "</h3>");
+        return response.send("<h1>Hello, Welcome Again!</h1><h3>" + user + "</h3>");
     }
    
-    catch(error) { throw error; }
+    catch(error) { 
+        console.error(error);
+        return response.status(500).send('Internal Server Error');
+    }
 
 
 });
