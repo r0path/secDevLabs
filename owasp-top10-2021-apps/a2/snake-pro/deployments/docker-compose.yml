@@ -29,9 +29,7 @@ services:
         build:
             context: ../
             dockerfile: deployments/mongo.Dockerfile
-        ports:
-          - "27017:27017"
-          - "27018:27018"
+        # ports removed to avoid exposing MongoDB to the host. Access MongoDB via Docker network using the service name 'mongodb'.
         volumes:
             - mongo_vol:/data/db
         networks:
