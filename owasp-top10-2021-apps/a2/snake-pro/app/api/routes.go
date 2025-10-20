@@ -25,9 +25,21 @@ func Root(c echo.Context) error {
 
 // WriteCookie writes a cookie into echo Context
 func WriteCookie(c echo.Context, jwt string) error {
-	cookie := new(http.Cookie)
-	cookie.Name = "sessionIDsnake"
-	cookie.Value = jwt
+	cookie := &http.Cookie{
+		Name:     "sessionIDsnake",
+		Value:    jwt,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	// Only set the Secure flag when the request is over TLS or the
+	// X-Forwarded-Proto header indicates HTTPS (useful behind proxies).
+	req := c.Request()
+	if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+		cookie.Secure = true
+	}
+
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "")
 }
