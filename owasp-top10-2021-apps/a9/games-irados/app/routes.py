@@ -73,8 +73,8 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username').encode('utf-8')
-        psw = Password(request.form.get('password').encode('utf-8'))
+        username = (request.form.get('username') or '').encode('utf-8')
+        psw = Password((request.form.get('password') or '').encode('utf-8'))
         user_password, success = database.get_user_password(username)
         if not success or user_password == None or not psw.validate_password(str(user_password[0])):
             flash("Usuario ou senha incorretos", "danger")
@@ -87,7 +87,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def newuser():
     if request.method == 'POST':
-        username = request.form.get('username').encode('utf-8')
+        username = (request.form.get('username') or '').encode('utf-8')
         psw1 = request.form.get('password1').encode('utf-8')
         psw2 = request.form.get('password2').encode('utf-8')
 
