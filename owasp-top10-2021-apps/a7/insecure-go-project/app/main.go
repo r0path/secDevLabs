@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"net/http"
+	"time"
 
 	"github.com/globocom/secDevLabs/owasp-top10-2021-apps/a7/insecure-go-project/app/api"
 	"github.com/globocom/secDevLabs/owasp-top10-2021-apps/a7/insecure-go-project/app/config"
@@ -45,7 +47,20 @@ func main() {
 
 	echoInstance.GET("/healthcheck", api.HealthCheck)
 	APIport := fmt.Sprintf(":%d", getAPIPort())
-	echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+
+	// Set reasonable server timeouts to mitigate slowloris-style DoS attacks.
+	// ReadTimeout: maximum duration for reading the entire request, including the body.
+	// WriteTimeout: maximum duration before timing out writes of the response.
+	// IdleTimeout: maximum amount of time to wait for the next request when keep-alives are enabled.
+	srv := &http.Server{
+		Addr:         APIport,
+		Handler:      echoInstance,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	echoInstance.Logger.Fatal(srv.ListenAndServe())
 }
 
 func errorAPI(err error) {
