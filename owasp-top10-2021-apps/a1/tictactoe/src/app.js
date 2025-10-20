@@ -88,21 +88,21 @@ app.post('/create', async (req, res) => {
     const username = req.body.username
     const password = req.body.password
     if (username.length < 5 || password.length < 5){
-        res
+        return res
             .status(400)
-            .json({msg: "Usernames and passwords must be at least 5 characters"})
+            .json({msg: "Invalid registration data"})
     }
     const ok = await db.checkUser(username)
     if (ok){
-        res
+        return res
             .status(400)
-            .json({"msg":"Username isn't available"})
+            .json({"msg":"Invalid registration data"})
     }
     const passwordConf = req.body.passwordconf
     if (password !== passwordConf){
-        res
+        return res
             .status(400)
-            .json({msg: "Password and confirmation don't match"})
+            .json({msg: "Invalid registration data"})
     }
 
     const salt = crypto.generateSalt()
