@@ -3,7 +3,9 @@ export class UserUtil {
     let username = localStorage.getItem('username');
 
     if(!username) {
-      let number = Math.floor(Math.random() * 100);
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      let number = array[0] % 100;
       username = `anonymous${number}`;
       localStorage.setItem('username', username);
     }
