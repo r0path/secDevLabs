@@ -20,6 +20,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(cookieParser())
 
+const sessionCookieOptions = {
+    httpOnly: true,
+    sameSite: 'lax'
+};
+if (process.env.NODE_ENV === 'production') {
+    sessionCookieOptions.secure = true;
+}
+
 // Creates a connection to the database
 var port = process.env.MONGO_PORT
 var MongoClient = require('mongodb').MongoClient;
@@ -89,7 +97,7 @@ router.post("/login", function(req,res)  {
             var token = jwt.sign({ username }, process.env.SECRET, {
                 expiresIn: 300 // Token expires in 5 minutes
             });
-            res.cookie('nodejsSessionToken', token).redirect(301, "/admin");
+            res.cookie('nodejsSessionToken', token, sessionCookieOptions).redirect(301, "/admin");
         } else {
             res.status(500).send('Invalid username or password!').redirect(301, "/logout");
         }
