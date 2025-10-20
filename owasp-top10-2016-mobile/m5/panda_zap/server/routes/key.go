@@ -18,11 +18,7 @@ type keyHolderV2 struct {
 
 // GetKeyV1 returns the encryption key
 func (es *EchoServer) GetKeyV1(c echo.Context) error {
-
-	if es.MessageKey.Value == 0 {
-		es.MessageKey.Value = rand.Intn(100) + 1
-	}
-
-	return c.JSON(http.StatusOK,
-		map[string]string{"key": strconv.Itoa(es.MessageKey.Value)})
+	// Access to the global encryption key is forbidden.
+	// Returning 403 to prevent disclosure of sensitive information.
+	return c.JSON(http.StatusForbidden, map[string]string{"error": "access to key is forbidden"})
 }
