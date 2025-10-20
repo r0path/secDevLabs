@@ -3,6 +3,8 @@
 from functools import wraps
 import uuid
 import datetime
+import time
+import threading
 from flask import (
     Flask,
     render_template,
@@ -115,7 +117,23 @@ def home():
 @app.route('/coupon', methods=['GET', 'POST'])
 @login_required
 def cupom():
+    # Simple server-side rate limiting to mitigate brute-force coupon guessing.
+    # Limits to MAX_ATTEMPTS per WINDOW seconds per logged-in user (stored in session).
+    MAX_ATTEMPTS = 5
+    WINDOW = 60  # seconds
+
     if request.method == 'POST':
+        now = time.time()
+        attempts = session.get('coupon_attempts', [])
+        # keep only recent attempts within the window
+        attempts = [ts for ts in attempts if now - ts < WINDOW]
+        if len(attempts) >= MAX_ATTEMPTS:
+            flash("Muitas tentativas. Por favor tente novamente mais tarde.", "danger")
+            return render_template('coupon.html')
+        # record this attempt
+        attempts.append(now)
+        session['coupon_attempts'] = attempts
+
         coupon = request.form.get('coupon')
         rows, success = database.get_game_coupon(coupon, session.get('username'))
         if not success or rows == None or rows == 0:
@@ -125,6 +143,8 @@ def cupom():
         if not success or game == None:
             flash("Cupom invalido", "danger")
             return render_template('coupon.html')
+        # reset attempts on successful redemption
+        session.pop('coupon_attempts', None)
         flash("Voce ganhou {}".format(game[0]), "primary")
         return render_template('coupon.html')
     else:
