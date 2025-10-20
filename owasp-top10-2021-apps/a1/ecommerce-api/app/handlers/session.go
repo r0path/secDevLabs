@@ -18,6 +18,20 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "sessionIDa5"
 	cookie.Value = jwt
+	// Set secure cookie attributes to mitigate XSS/CSRF and ensure cookie transmitted only over HTTPS.
+	cookie.Path = "/"
+	// Prevent JavaScript access to the cookie
+	cookie.HttpOnly = true
+	// Only set Secure when the request is over TLS to avoid breaking local HTTP development
+	if c.Request().TLS != nil {
+		cookie.Secure = true
+	} else {
+		cookie.Secure = false
+	}
+	// Use Lax SameSite to provide CSRF protections while allowing top-level navigations
+	cookie.SameSite = http.SameSiteLaxMode
+	// Align cookie expiration with JWT expiration (72 hours)
+	cookie.Expires = time.Now().Add(72 * time.Hour)
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "")
 }
