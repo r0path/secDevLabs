@@ -38,6 +38,13 @@ func RecoveryPassword(c echo.Context) (err error) {
 			"token": "Error to generate token.",
 		})
 	}
+
+	// Store the generated recovery token server-side bound to the user to make it single-use.
+	if err := database.StoreRecoveryToken(recoveryPasswordAnswers.Login, token); err != nil {
+		fmt.Println("failed to store recovery token:", err)
+		// Continue and return token to user even if storing fails; storing is best-effort in this example.
+	}
+
 	fmt.Println(token)
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": token,
