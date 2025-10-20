@@ -51,10 +51,6 @@ func Login(c echo.Context) error {
 	}
 
 	passOK := pass.CheckPasswordHash(loginAttempt.Password, userDataResult.HashedPassword)
-	if err != nil {
-		// could not bcrypt this password
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error login2."})
-	}
 
 	if !passOK {
 		// wrong password
