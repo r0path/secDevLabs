@@ -175,18 +175,55 @@ We can confirm that the directory is browseable by accessing it through a web br
 
 #### Misconfigured headers give away unnecessary information about the server
 
-Using [Nikto] tool to perform a security check scan, it's possible to see that there are multiple points of attention regarding security headers.
+This application is missing several recommended security headers. Without these headers the app is more exposed to attacks such as SSL stripping, clickjacking, XSS and MIME-type confusion.
 
-To install it, you can use the following command in your OSX terminal:
+Recommended headers to add (examples):
 
-```sh
-brew install nikto
+- Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+- Content-Security-Policy: a restrictive policy reduces XSS risk (example below)
+- X-Frame-Options: DENY (prevents clickjacking)
+- X-Content-Type-Options: nosniff (prevents MIME-type confusion)
+
+Examples for common servers / app-level fixes:
+
+Apache (.htaccess or server config):
+
+```apache
+<IfModule mod_headers.c>
+  Header set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';"
+  Header always append X-Frame-Options DENY
+  Header set X-Content-Type-Options nosniff
+</IfModule>
 ```
 
-Then scan the web app using:
+Nginx (server or location block):
+
+```nginx
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';" always;
+add_header X-Frame-Options DENY always;
+add_header X-Content-Type-Options nosniff always;
+```
+
+PHP (application-level header injection — useful when you cannot change server config):
+
+```php
+header("Strict-Transport-Security: max-age=63072000; includeSubDomains; preload");
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';");
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+```
+
+Also consider disabling PHP version exposure (set expose_php = Off in php.ini) and disabling server tokens in Nginx (server_tokens off;) or equivalent settings in other servers.
+
+After applying changes, restart your web server then verify headers using curl or re-run the scanner:
 
 ```sh
-nikto -h http://localhost:8000/
+# verify headers
+curl -I -k https://localhost:443/
+# or scan with nikto
+nikto -h https://localhost:443/
 ```
 
  <p align="center">
