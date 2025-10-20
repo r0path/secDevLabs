@@ -93,14 +93,6 @@ func Login(c echo.Context) error {
 	}
 
 	passOK := crypto.CheckPasswordHash(loginAttempt.Password, userDataResult.HashedPassword)
-	if err != nil {
-		log.WithFields(
-			log.Fields{
-				"method": "LoginCheckPasswordHash",
-				"error":  err,
-			}).Error()
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Incorrect username or password."})
-	}
 
 	if !passOK {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Incorrect username or password."})
