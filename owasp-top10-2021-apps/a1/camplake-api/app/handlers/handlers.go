@@ -21,6 +21,11 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "sessionIDa5"
 	cookie.Value = jwt
+	// Mitigate token theft and CSRF risks
+	cookie.HttpOnly = true
+	cookie.SameSite = http.SameSiteLaxMode
+	// Only send Secure flag when the request is over TLS to avoid breaking non-TLS dev environments
+	cookie.Secure = c.Request().TLS != nil
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "")
 }
