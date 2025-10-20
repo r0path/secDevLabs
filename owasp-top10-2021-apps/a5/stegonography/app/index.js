@@ -45,16 +45,32 @@ MongoClient.connect(url, function(err, db) {
 });
 
 // Add "admin" default user to the database
-MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
-    var dbo = db.db("stego");
-    var myobj = { username: "admin", password: "admin" };
-    dbo.collection("users").insertOne(myobj, function(err, res) {
+// Only create a default admin if ADMIN_USERNAME and ADMIN_PASSWORD environment variables are set.
+// This avoids creating well-known default credentials in production.
+var defaultAdminUser = process.env.ADMIN_USERNAME;
+var defaultAdminPass = process.env.ADMIN_PASSWORD;
+if (defaultAdminUser && defaultAdminPass) {
+    MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        console.log("Admin user added to the database");
-        db.close();
+        var dbo = db.db("stego");
+        dbo.collection("users").findOne({ username: defaultAdminUser }, function(err, user) {
+            if (err) throw err;
+            if (!user) {
+                var myobj = { username: defaultAdminUser, password: defaultAdminPass };
+                dbo.collection("users").insertOne(myobj, function(err, res) {
+                    if (err) throw err;
+                    console.log("Admin user added to the database");
+                    db.close();
+                });
+            } else {
+                console.log("Admin user already exists, skipping creation");
+                db.close();
+            }
+        });
     });
-});
+} else {
+    console.log("Skipping creation of default admin account. To enable, set ADMIN_USERNAME and ADMIN_PASSWORD environment variables.");
+}
 
 // User login route, get webpage
 router.get("/login", function(req,res) {
