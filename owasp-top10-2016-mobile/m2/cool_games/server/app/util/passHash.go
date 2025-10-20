@@ -3,6 +3,8 @@ package util
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
+	"crypto/subtle"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -36,16 +38,35 @@ func Hash(password string) (string, string, error) {
 
 	hashedPassword := pbkdf2.Key([]byte(password), salt, 4096, 32, sha256.New)
 
-	return string(hashedPassword), string(salt), nil
+	// Encode hash and salt using base64 to safely store as text
+	hashB64 := base64.StdEncoding.EncodeToString(hashedPassword)
+	saltB64 := base64.StdEncoding.EncodeToString(salt)
+
+	return hashB64, saltB64, nil
 }
 
 // VerifyHash returns true if the received password matches the hash with the given salt.
 func VerifyHash(password string, hashedPassword string, salt string) bool {
-	newHash := pbkdf2.Key([]byte(password), []byte(salt), 4096, 32, sha256.New)
-
-	if string(newHash) == string(hashedPassword) {
-		return true
+	// Decode salt and expected hash from base64. If decoding fails, fall back to raw bytes
+	saltBytes, err := base64.StdEncoding.DecodeString(salt)
+	if err != nil {
+		// Fallback to raw bytes from older storage format
+		saltBytes = []byte(salt)
+	}
+	expectedHash, err := base64.StdEncoding.DecodeString(hashedPassword)
+	if err != nil {
+		// Fallback to raw bytes from older storage format
+		expectedHash = []byte(hashedPassword)
 	}
 
+	newHash := pbkdf2.Key([]byte(password), saltBytes, 4096, 32, sha256.New)
+
+	// Compare the computed hash with the expected hash in constant time
+	if len(newHash) != len(expectedHash) {
+		return false
+	}
+	if subtle.ConstantTimeCompare(newHash, expectedHash) == 1 {
+		return true
+	}
 	return false
 }
