@@ -44,6 +44,14 @@ func Connect() error {
 
 	noteBoxDB = mongoClient.Database(mongoDbName)
 
+	// Ensure users collection and a unique index on username to prevent duplicates
+	userCollection = noteBoxDB.Collection("users")
+	indexModel := mongo.IndexModel{Keys: bson.M{"username": 1}, Options: options.Index().SetUnique(true)}
+	_, err = userCollection.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
