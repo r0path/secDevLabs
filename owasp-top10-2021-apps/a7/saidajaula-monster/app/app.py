@@ -8,6 +8,7 @@ import os
 import json
 import hashlib
 import uuid
+import time
 from functools import wraps
 
 
@@ -16,6 +17,20 @@ database = DataBase(os.environ.get('A2_DATABASE_HOST'),
                     os.environ.get('A2_DATABASE_USER'),
                     os.environ.get('A2_DATABASE_PASSWORD'),
                     os.environ.get('A2_DATABASE_NAME'))
+
+# Simple in-memory brute-force protections.
+# Note: This uses in-memory storage and will not persist across processes.
+# For production environments behind multiple workers or hosts, replace with
+# a centralized store (e.g. Redis) and integrate with a proper rate-limiting
+# or account lockout mechanism.
+MAX_ATTEMPTS = 5
+WINDOW_SECONDS = 300  # sliding window for counting attempts (5 minutes)
+LOCKOUT_SECONDS = 300  # lockout duration after MAX_ATTEMPTS exceeded (5 minutes)
+
+failed_attempts_ip = {}       # ip -> [timestamps]
+failed_attempts_user = {}     # username -> [timestamps]
+locked_until_user = {}        # username -> timestamp when lockout ends
+
 
 
 def login_admin_required(f):
@@ -91,16 +106,55 @@ def login():
         if form_username == "" or form_password == "":
             return "Error! You have to pass username and password! \n"
 
-        result, success = database.get_user(form_username)
-        if not success:
-            return "Login failed! \n"
+        # Client IP (respect X-Forwarded-For when behind a proxy)
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if client_ip:
+            client_ip = client_ip.split(',')[0].strip()
 
-        if result is None:
+        now = time.time()
+
+        def _prune(timestamps):
+            return [ts for ts in timestamps if now - ts <= WINDOW_SECONDS]
+
+        # Prune old IP attempts and enforce IP rate limit
+        ip_attempts = failed_attempts_ip.get(client_ip, [])
+        ip_attempts = _prune(ip_attempts)
+        failed_attempts_ip[client_ip] = ip_attempts
+        if len(ip_attempts) >= MAX_ATTEMPTS:
+            return make_response("Too many requests from your IP. Try again later.\n", 429)
+
+        # Check if account is locked
+        locked_until = locked_until_user.get(form_username)
+        if locked_until and now < locked_until:
+            return make_response("Too many failed attempts. Account temporarily locked. Try again later.\n", 429)
+
+        result, success = database.get_user(form_username)
+        if not success or result is None:
+            # Record failed attempt
+            failed_attempts_ip.setdefault(client_ip, []).append(now)
+            failed_attempts_user.setdefault(form_username, []).append(now)
+            # Prune and check user attempts
+            user_attempts = _prune(failed_attempts_user.get(form_username, []))
+            failed_attempts_user[form_username] = user_attempts
+            if len(user_attempts) >= MAX_ATTEMPTS:
+                locked_until_user[form_username] = now + LOCKOUT_SECONDS
             return "Login failed! \n"
 
         password = Password(form_password, form_username, result[2])
         if not password.validate_password(result[0]):
+            # Record failed attempt
+            failed_attempts_ip.setdefault(client_ip, []).append(now)
+            failed_attempts_user.setdefault(form_username, []).append(now)
+            user_attempts = _prune(failed_attempts_user.get(form_username, []))
+            failed_attempts_user[form_username] = user_attempts
+            if len(user_attempts) >= MAX_ATTEMPTS:
+                locked_until_user[form_username] = now + LOCKOUT_SECONDS
             return "Login failed! \n"
+
+        # Successful login -> clear failed attempts and lockout
+        failed_attempts_user.pop(form_username, None)
+        failed_attempts_ip.pop(client_ip, None)
+        locked_until_user.pop(form_username, None)
 
         cookie_dic = {"permissao": result[1], "username": form_username}
         cookie = json.dumps(cookie_dic)
