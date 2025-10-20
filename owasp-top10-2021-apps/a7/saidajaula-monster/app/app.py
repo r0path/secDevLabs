@@ -62,6 +62,20 @@ def register():
         return render_template('register.html')
 
     if request.method == 'POST':
+        # Basic Origin/Referer check to mitigate CSRF
+        origin = request.headers.get('Origin')
+        referer = request.headers.get('Referer')
+        host_url = request.host_url.rstrip('/')
+        if origin:
+            if origin.rstrip('/') != host_url:
+                return "Invalid request origin.", 400
+        elif referer:
+            if not referer.startswith(host_url):
+                return "Invalid request referer.", 400
+        else:
+            # Reject POSTs without Origin or Referer to reduce CSRF risk
+            return "Missing Origin or Referer header.", 400
+
         form_username = request.form.get('username', "")
         form_password = request.form.get('password', "")
         form_password2 = request.form.get('password2', "")
@@ -86,6 +100,20 @@ def login():
         return render_template('login.html')
 
     if request.method == 'POST':
+        # Basic Origin/Referer check to mitigate CSRF
+        origin = request.headers.get('Origin')
+        referer = request.headers.get('Referer')
+        host_url = request.host_url.rstrip('/')
+        if origin:
+            if origin.rstrip('/') != host_url:
+                return "Invalid request origin.", 400
+        elif referer:
+            if not referer.startswith(host_url):
+                return "Invalid request referer.", 400
+        else:
+            # Reject POSTs without Origin or Referer to reduce CSRF risk
+            return "Missing Origin or Referer header.", 400
+
         form_username = request.form.get('username', "")
         form_password = request.form.get('password', "")
         if form_username == "" or form_password == "":
@@ -106,9 +134,10 @@ def login():
         cookie = json.dumps(cookie_dic)
         hash_cookie = hashlib.sha256(cookie.encode('utf-8')).hexdigest()
         cookie_done = '.'.join([cookie,hash_cookie])
-        cookie_done = base64.b64encode(str(cookie_done).encode("utf-8"))
+        cookie_done = base64.b64encode(str(cookie_done).encode("utf-8")).decode("utf-8")
         resp = make_response("Logged in!")
-        resp.set_cookie("sessionId", cookie_done)
+        # Set secure cookie attributes to mitigate session fixation/CSRF risks
+        resp.set_cookie("sessionId", cookie_done, httponly=True, samesite='Lax', secure=(not app.debug))
         return resp
 
 
