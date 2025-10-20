@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -31,7 +32,8 @@ func Login(c echo.Context) error {
 	}
 
 	if validUser {
-		msgUser := fmt.Sprintf("Welcome, %s!", loginAttempt.User)
+		escapedUser := html.EscapeString(loginAttempt.User)
+		msgUser := fmt.Sprintf("Welcome, %s!", escapedUser)
 		return c.String(http.StatusOK, msgUser)
 	}
 
@@ -55,7 +57,8 @@ func Register(c echo.Context) error {
 	}
 
 	if userCreated {
-		msgUser := fmt.Sprintf("User %s created!", RegisterAttempt.User)
+		escapedUser := html.EscapeString(RegisterAttempt.User)
+		msgUser := fmt.Sprintf("User %s created!", escapedUser)
 		return c.String(http.StatusOK, msgUser)
 	}
 
