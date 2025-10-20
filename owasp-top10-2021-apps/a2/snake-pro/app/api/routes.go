@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -53,6 +55,18 @@ func Register(c echo.Context) error {
 
 	if userData.Password != userData.RepeatPassword {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Passwords do not match."})
+	}
+
+	// Validate username: trim and enforce allowed characters and length (3-30)
+	userData.Username = strings.TrimSpace(userData.Username)
+	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]{3,30}$`)
+	if !usernameRegex.MatchString(userData.Username) {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Invalid username. Must be 3-30 characters and contain only letters, numbers, dot, underscore or hyphen."})
+	}
+
+	// Validate password: minimum length
+	if len(userData.Password) < 8 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Invalid password. Minimum length is 8 characters."})
 	}
 
 	newGUID1 := uuid.Must(uuid.NewRandom())
