@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m4/note-box/server/app/db"
@@ -19,6 +20,22 @@ func Register(c echo.Context) error {
 
 	attemptUsername := strings.TrimSpace(u.Username)
 	attemptPassword := strings.TrimSpace(u.Password)
+
+	// Basic server-side validation
+	if attemptUsername == "" || attemptPassword == "" {
+		return c.JSON(http.StatusBadRequest, "Username and password must not be empty")
+	}
+
+	// Username: 3-30 chars, letters, numbers, dot, underscore, hyphen
+	var usernameRegex = regexp.MustCompile(`^[A-Za-z0-9._-]{3,30}$`)
+	if !usernameRegex.MatchString(attemptUsername) {
+		return c.JSON(http.StatusBadRequest, "Username must be 3-30 characters and contain only letters, numbers, dot, underscore or hyphen")
+	}
+
+	// Password: minimum length 8
+	if len(attemptPassword) < 8 {
+		return c.JSON(http.StatusBadRequest, "Password must be at least 8 characters long")
+	}
 
 	_, err := db.FindOneUser(attemptUsername)
 	if err == nil {
