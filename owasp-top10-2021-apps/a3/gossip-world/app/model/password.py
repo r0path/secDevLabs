@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 
 
 class Password:
@@ -16,4 +17,13 @@ class Password:
         return hashlib.sha256(string).hexdigest()
 
     def _compare_password(self, password_1, password_2):
-        return password_1 == password_2
+        # Use hmac.compare_digest for constant-time comparison to avoid timing attacks
+        try:
+            return hmac.compare_digest(password_1, password_2)
+        except TypeError:
+            # Fallback: ensure inputs are bytes for compare_digest
+            if isinstance(password_1, str):
+                password_1 = password_1.encode('utf-8')
+            if isinstance(password_2, str):
+                password_2 = password_2.encode('utf-8')
+            return hmac.compare_digest(password_1, password_2)
