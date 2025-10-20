@@ -4,8 +4,8 @@
 #
 
 # Generating "random" passwords
-MONGO_DATABASE_USERNAME_TMP="User$RANDOM$RANDOM"
-MONGO_DATABASE_PASSWORD_TMP="Pass$RANDOM$RANDOM"
+MONGO_DATABASE_USERNAME_TMP="User$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12)"
+MONGO_DATABASE_PASSWORD_TMP="Pass$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)"
 
 # Writing passwords into dockers.env file to be used by docker compose
 echo "MONGO_DATABASE_USERNAME=$MONGO_DATABASE_USERNAME_TMP" > deployments/dockers.env
