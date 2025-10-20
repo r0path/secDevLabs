@@ -4,6 +4,6 @@ db.createUser(
     {
         user: "u_snake_pro",
         pwd: "svGX8SViufvYYNu6m3Kv",
-        roles: [{ role: "userAdminAnyDatabase", db: "admin" }]
+        roles: [{ role: "readWrite", db: "snake_pro" }]
     }
 );
