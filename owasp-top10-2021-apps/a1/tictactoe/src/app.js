@@ -172,7 +172,7 @@ app.post('/login', async (req, res) => {
     });
     
     res
-        .cookie('tictacsession', token)
+        .cookie('tictacsession', token, { sameSite: 'lax' })
         .redirect('/game')
 });
 
