@@ -37,11 +37,32 @@ class _AuthScreenState extends State<AuthScreen> {
     if (statusCode == 404) {
       // TO DO:
       // Handle wrong username or password so it can't be exploited.
+      showAlertDialog(context, 'Login Error', 'Wrong username or password.');
       return;
     }
 
-    Map sessionTokenMap = jsonDecode(response.body);
-    var sessionToken = SessionToken.fromJson(sessionTokenMap);
+    // Only treat explicit success responses as success
+    if (statusCode != 200) {
+      showAlertDialog(context, 'Login Error', 'Unexpected response from server (status: $statusCode).');
+      return;
+    }
+
+    Map sessionTokenMap;
+    try {
+      sessionTokenMap = jsonDecode(response.body);
+    } catch (e) {
+      showAlertDialog(context, 'Login Error', 'Invalid response from server.');
+      return;
+    }
+
+    var sessionToken;
+    try {
+      sessionToken = SessionToken.fromJson(sessionTokenMap);
+    } catch (e) {
+      showAlertDialog(context, 'Login Error', 'Invalid session data received.');
+      return;
+    }
+
     await _storage.write(key: username, value: sessionToken.Value);
 
     Navigator.push(
