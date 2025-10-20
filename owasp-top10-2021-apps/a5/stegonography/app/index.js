@@ -35,10 +35,23 @@ MongoClient.connect(url, function(err, db) {
 // Create "users" collection
 var url = "mongodb://db:27017/stego"
 MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
+    if (err) {
+        console.error("Failed to connect to MongoDB when creating 'users' collection:", err);
+        // Do not crash the process on startup due to transient DB connectivity issues.
+        return;
+    }
     var dbo = db.db("stego");
     dbo.createCollection("users", function(err, ress) {
-        if (err) throw err;
+        if (err) {
+            // If the collection already exists, that's fine. Otherwise log the error and continue.
+            if (err.codeName === 'NamespaceExists' || (err.message && err.message.indexOf('already exists') !== -1)) {
+                console.log("Users collection already exists.");
+            } else {
+                console.error("Failed to create 'users' collection:", err);
+            }
+            db.close();
+            return;
+        }
         console.log("Users collection created!");
         db.close();
     })
