@@ -1,7 +1,9 @@
 import os
 
 DEBUG = os.environ.get('DEBUG', 'False')
-SECRET_KEY = os.environ.get('SECRET_KEY', 'ooops,algo errado!')
+# Use an environment-provided SECRET_KEY if available; otherwise generate a secure random key at startup.
+# NOTE: this will invalidate persisted sessions across restarts but avoids using a hardcoded, guessable secret.
+SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(24)
 
 MYSQL_ENDPOINT = os.environ.get('MYSQL_ENDPOINT')
 MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
