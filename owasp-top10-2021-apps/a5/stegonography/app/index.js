@@ -20,6 +20,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(cookieParser())
 
+// Simple same-origin validation to mitigate login CSRF (fails closed)
+function validateSameOrigin(req) {
+    const origin = req.get('origin');
+    const referer = req.get('referer');
+    const host = req.protocol + '://' + req.get('host');
+    if (origin) return origin === host;
+    if (referer) return referer.startsWith(host);
+    // If neither header is present, deny to be safe
+    return false;
+}
+
 // Creates a connection to the database
 var port = process.env.MONGO_PORT
 var MongoClient = require('mongodb').MongoClient;
@@ -62,7 +73,60 @@ router.get("/login", function(req,res) {
 })
 
 // User login route, submit POST request to server
+
+// Validate Origin or Referer headers to mitigate CSRF
+function validateSameOrigin(req) {
+    const origin = req.get('origin');
+    const referer = req.get('referer');
+    const host = req.protocol + '://' + req.get('host');
+    if (origin) return origin === host;
+    if (referer) return referer.startsWith(host);
+    // If neither header is present, fail closed
+    return false;
+}
+
 router.post("/login", function(req,res)  {
+    // Basic same-origin check to mitigate login CSRF. Require Origin/Referer match host; fail closed.
+    const origin = req.get("origin");
+    const referer = req.get("referer");
+    const host = req.protocol + "://" + req.get("host");
+    if (origin && origin !== host) {
+        return res.status(403).send("CSRF validation failed");
+    }
+    if (!origin && referer && !referer.startsWith(host)) {
+        return res.status(403).send("CSRF validation failed");
+    }
+    if (!origin && !referer) {
+        return res.status(403).send("CSRF validation failed");
+    }
+
+    // Basic same-origin check to mitigate login CSRF. Require Origin/Referer match host; fail closed.
+    const origin = req.get('origin');
+    const referer = req.get('referer');
+    const host = req.protocol + '://' + req.get('host');
+    if (origin && origin !== host) return res.status(403).send('CSRF validation failed');
+    if (!origin && referer && !referer.startsWith(host)) return res.status(403).send('CSRF validation failed');
+    if (!origin && !referer) return res.status(403).send('CSRF validation failed');
+
+    // Basic same-origin check to mitigate login CSRF. If Origin or Referer
+    // headers are present, require they match the server host. If neither
+    // header is present, fail closed.
+    (function(){
+        const origin = req.get('origin');
+        const referer = req.get('referer');
+        const host = req.protocol + '://' + req.get('host');
+        if (origin && origin !== host) {
+            return res.status(403).send('CSRF validation failed');
+        }
+        if (!origin && referer && !referer.startsWith(host)) {
+            return res.status(403).send('CSRF validation failed');
+        }
+        if (!origin && !referer) {
+            // No headers to validate; deny to be safe
+            return res.status(403).send('CSRF validation failed');
+        }
+    })();
+
     var username = req.body.user.name;
     var password = req.body.user.password;
     
