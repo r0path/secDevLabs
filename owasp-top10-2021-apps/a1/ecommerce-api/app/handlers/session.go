@@ -66,6 +66,9 @@ func Login(c echo.Context) error {
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
+	// Include a canonical, stable user identifier for authorization checks.
+	// Use the registered UserID as the JWT 'sub' (subject) claim.
+	claims["sub"] = userDataResult.UserID
 	claims["name"] = userDataResult.Username
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
