@@ -101,7 +101,11 @@ func Login(c echo.Context) error {
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	secret := os.Getenv("SECRET_KEY")
+	if secret == "" {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Server misconfiguration."})
+	}
+	t, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return err
 	}
