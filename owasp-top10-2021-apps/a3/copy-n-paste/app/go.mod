@@ -19,4 +19,5 @@ require (
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 	golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b // indirect
 	google.golang.org/appengine v1.3.0 // indirect
+	golang.org/x/text v0.31.0
 )
