@@ -4,7 +4,7 @@
   "description": "This is a node js insecure app",
   "main": "app.js",
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "2.2.0",
     "cookie-parser": "^1.4.4",
     "dotenv-safe": "^6.1.0",
     "ejs": "^2.6.1",
