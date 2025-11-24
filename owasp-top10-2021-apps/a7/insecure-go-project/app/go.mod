@@ -1,6 +1,7 @@
 module github.com/globocom/secDevLabs/owasp-top10-2021-apps/a7/insecure-go-project/app
 
 go 1.14
+require golang.org/x/text v0.31.0
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -16,4 +17,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc // indirect
 	golang.org/x/sys v0.0.0-20190108104531-7fbe1cd0fcc2 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
+	golang.org/x/text v0.31.0 // indirect
 )
