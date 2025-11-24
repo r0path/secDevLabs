@@ -3,6 +3,8 @@ module github.com/globocom/secDevLabs/owasp-top10-2021-apps/a7/insecure-go-proje
 go 1.14
 
 require (
+	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/labstack/echo v3.3.10+incompatible
