@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"os"
 	"time"
@@ -111,7 +112,8 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error login5."})
 	}
 	c.Response().Header().Set("Content-type", "text/html")
-	messageLogon := fmt.Sprintf("Hello, %s! Welcome to SnakePro", userDataResult.Username)
+	// Escape username to prevent XSS when embedding into HTML responses
+messageLogon := fmt.Sprintf("Hello, %s! Welcome to SnakePro", html.EscapeString(userDataResult.Username))
 	// err = c.Redirect(http.StatusFound, "http://www.localhost:10003/game/ranking")
 	return c.String(http.StatusOK, messageLogon)
 }
