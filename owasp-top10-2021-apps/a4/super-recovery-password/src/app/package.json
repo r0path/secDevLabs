@@ -14,6 +14,9 @@
     "styled-components": "^5.3.5",
     "web-vitals": "^2.1.4"
   },
+  "overrides": {
+    "terser": "5.14.2"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
