@@ -10,4 +10,7 @@ require (
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.2
 	golang.org/x/crypto v0.0.0-20200414173820-0848c9571904
+	golang.org/x/text v0.3.8
+	golang.org/x/text v0.3.8
+	golang.org/x/text v0.3.8
 )
