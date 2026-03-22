@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -70,7 +71,7 @@ func Login(c echo.Context) error {
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte("secret"))
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return err
 	}
@@ -85,11 +86,10 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"result":   "success",
 			"username": userDataResult.Username,
-			"user_id":  userDataResult.UserID,
 		})
 	}
 
-	messageLogon := fmt.Sprintf("Hello, %s! This is your userID: %s\n", userDataResult.Username, userDataResult.UserID)
+	messageLogon := fmt.Sprintf("Hello, %s! Login successful.\n", userDataResult.Username)
 	return c.String(http.StatusOK, messageLogon)
 }
 
