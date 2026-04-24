@@ -17,19 +17,7 @@ import (
 )
 
 func CreateFakeToken() (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &types.Claims{
-		Username: "jasonVoorhess",
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-	tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return tokenString, nil
+	return "", nil
 }
 
 func checkRequirements(configAPI *context.APIConfig) error {
@@ -96,7 +84,9 @@ func main() {
 	echoInstance.HideBanner = true
 
 	fakeUser, _ := CreateFakeToken()
-	log.Printf("Fake Token %s", fakeUser)
+	if fakeUser != "" {
+		log.Printf("Fake Token %s", fakeUser)
+	}
 
 	echoInstance.GET("/healthcheck", handlers.HealthCheck)
 	echoInstance.POST("/register", handlers.NewUser)
