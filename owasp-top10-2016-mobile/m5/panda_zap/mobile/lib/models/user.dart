@@ -32,7 +32,7 @@ Future<int> register(String username) async {
 
   // set up POST request arguments
   String host = Platform.isAndroid ? "10.0.2.2" : "localhost";
-  String url = 'http://$host:11005/user';
+  String url = 'https://$host:11005/user';
   Map<String, String> headers = {"Content-type": "application/json"};
   String json = '{"id":"$uuidString", "name": "$username"}';
 
@@ -61,7 +61,7 @@ Future<bool> userIsAvailable(String username) async {
   // set up GET request arguments
   int _statusCode;
   String host = Platform.isAndroid ? "10.0.2.2" : "localhost";
-  String url = 'http://$host:11005/user/$username';
+  String url = 'https://$host:11005/user/$username';
 
   // make GET request
   try {
@@ -84,7 +84,7 @@ Future<void> updateAllUsersList() async {
   // set up GET request arguments
   int statusCode;
   String host = Platform.isAndroid ? "10.0.2.2" : "localhost";
-  String url = 'http://$host:11005/messages';
+  String url = 'https://$host:11005/messages';
   var sessionToken = me.sessionToken;
   var headers = {
     'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ Future<bool> addContact(String contactName) async {
   // set up GET request arguments
   int _statusCode;
   String host = Platform.isAndroid ? "10.0.2.2" : "localhost";
-  String url = 'http://$host:11005/user/$contactName';
+  String url = 'https://$host:11005/user/$contactName';
 
   // make GET request
   try {
