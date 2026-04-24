@@ -11,8 +11,6 @@ import (
 	"camp-lake-api/db"
 	"camp-lake-api/handlers"
 	"camp-lake-api/types"
-
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
@@ -24,8 +22,8 @@ func CreateFakeToken() (string, error) {
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-	tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte("my_secret_key"))
 	if err != nil {
 		log.Fatal(err)
 	}
