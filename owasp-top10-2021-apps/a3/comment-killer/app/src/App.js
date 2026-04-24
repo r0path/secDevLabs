@@ -17,13 +17,10 @@ function App() {
         async function getComments() {
             try {
                 var response = await HTTP.GetComments();
-                var newList = list.concat(Object.values(response.comments));
-                list = newList;
-                setList([...list]);
+                var newComments = Object.values(response.comments);
+                var newList = list.concat(newComments);
+                setList(newList);
 
-                list.forEach(function(comment) {
-                    COMMENT.Parse(comment);
-                });
             } catch(e) {
                 console.warn(e);
             }
@@ -48,7 +45,6 @@ function App() {
                     try {
                         HTTP.PostComment(comment).then(response => console.log(response))
                         setList([...list, comment]);
-                        COMMENT.Parse(comment);
                         setComment("");
                     } catch (e) {
                         void 0;
