@@ -17,17 +17,10 @@ def login():
         username = request.values.get('username')
         password = request.values.get('password')
     
-        if username == "admin" and password == "admin":
-            token = str(uuid.uuid4().hex)
-            cookie = { "username":username, "admin":True, "sessionId":token }
-            pickle_resultado = pickle.dumps(cookie)
-            encodedSessionCookie = base64.b64encode(pickle_resultado)
-            resp = make_response(redirect("/user"))
-            resp.set_cookie("sessionId", encodedSessionCookie)
-            return resp
-
-        else:
-            return redirect("/admin")
+        # Hardcoded credentials removed: do not allow default admin/admin access.
+        # Authentication must be implemented with a real credential store and
+        # proper password verification before issuing a session.
+        return redirect("/admin")
 
     else:
         return render_template('admin.html')
