@@ -234,7 +234,9 @@ function callback_filter_prepare($text, $filter, $format, $langcode, $cache, $ca
  * @ingroup callbacks
  */
 function callback_filter_process($text, $filter, $format, $langcode, $cache, $cache_id) {
-  $text = preg_replace('|\[codefilter_code\](.+?)\[/codefilter_code\]|se', "<pre>$1</pre>", $text);
+  $text = preg_replace_callback('|\[codefilter_code\](.+?)\[/codefilter_code\]|s', function ($matches) {
+    return '<pre>' . htmlspecialchars($matches[1], ENT_QUOTES, 'UTF-8') . '</pre>';
+  }, $text);
 
   return $text;
 }
