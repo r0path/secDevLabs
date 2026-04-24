@@ -29,7 +29,9 @@ const login = async (credentials) => {
     try {
         const { email, password } = credentials;
 
-        const existsUser = await User.find({$and: [ { email: email}, { password: password} ]});
+        if (typeof email !== 'string' || typeof password !== 'string') { return null; }
+
+        const existsUser = await User.find({ email: email, password: password });
 
         if(!existsUser) { return null;}
 
