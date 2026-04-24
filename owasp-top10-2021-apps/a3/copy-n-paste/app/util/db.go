@@ -88,12 +88,11 @@ func NewUser(user string, pass string, passcheck string) (bool, error) {
 	}
 	defer dbConn.Close()
 
-	query := fmt.Sprint("insert into Users (username, password) values ('" + user + "', '" + passHash + "')")
-	rows, err := dbConn.Query(query)
+	query := "insert into Users (username, password) values (?, ?)"
+	_, err = dbConn.Exec(query, user, passHash)
 	if err != nil {
 		return false, err
 	}
-	defer rows.Close()
 
 	fmt.Println("User created: ", user)
 	return true, nil //user created
