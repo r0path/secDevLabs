@@ -44,17 +44,8 @@ MongoClient.connect(url, function(err, db) {
     })
 });
 
-// Add "admin" default user to the database
-MongoClient.connect(url, function(err, db) {
-    if (err) throw err;
-    var dbo = db.db("stego");
-    var myobj = { username: "admin", password: "admin" };
-    dbo.collection("users").insertOne(myobj, function(err, res) {
-        if (err) throw err;
-        console.log("Admin user added to the database");
-        db.close();
-    });
-});
+// Do not create a predictable default admin account on startup.
+// Admin credentials must be provisioned securely through deployment/configuration.
 
 // User login route, get webpage
 router.get("/login", function(req,res) {
