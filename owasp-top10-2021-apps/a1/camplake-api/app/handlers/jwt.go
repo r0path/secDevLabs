@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -13,7 +15,13 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("my_secret_key")
+func jwtKey() ([]byte, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return nil, errors.New("JWT_SECRET environment variable is required")
+	}
+	return []byte(secret), nil
+}
 
 func CreateToken(creds types.Credentials) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
@@ -24,9 +32,13 @@ func CreateToken(creds types.Credentials) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	key, err := jwtKey()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
+	}
+	tokenString, err := token.SignedString(key)
+	if err != nil {
+		return "", err
 	}
 	return tokenString, nil
 }
