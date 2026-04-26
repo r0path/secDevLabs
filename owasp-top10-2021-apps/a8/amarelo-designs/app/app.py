@@ -2,9 +2,11 @@
 
 from flask import Flask, request, make_response, render_template, redirect, flash
 import uuid
-import pickle
 import base64
+from itsdangerous import URLSafeSerializer, BadSignature
 app = Flask(__name__)
+app.secret_key = app.config.get("SECRET_KEY", "change-me-in-production")
+serializer = URLSafeSerializer(app.secret_key, salt="sessionId")
 
 
 @app.route("/")
@@ -19,11 +21,10 @@ def login():
     
         if username == "admin" and password == "admin":
             token = str(uuid.uuid4().hex)
-            cookie = { "username":username, "admin":True, "sessionId":token }
-            pickle_resultado = pickle.dumps(cookie)
-            encodedSessionCookie = base64.b64encode(pickle_resultado)
+            cookie = { "username": username, "admin": True, "sessionId": token }
+            encodedSessionCookie = serializer.dumps(cookie)
             resp = make_response(redirect("/user"))
-            resp.set_cookie("sessionId", encodedSessionCookie)
+            resp.set_cookie("sessionId", encodedSessionCookie, httponly=True, samesite="Lax")
             return resp
 
         else:
@@ -35,9 +36,12 @@ def login():
 @app.route("/user", methods=['GET'])
 def userInfo():
     cookie = request.cookies.get("sessionId")
-    if cookie == None:
+    if cookie is None:
         return "Não Autorizado!"
-    cookie = pickle.loads(base64.b64decode(cookie))
+    try:
+        cookie = serializer.loads(cookie)
+    except BadSignature:
+        return "Não Autorizado!"
 
     return render_template('user.html')
     
