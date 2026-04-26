@@ -110,7 +110,8 @@ func Login(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error login5."})
 	}
-	c.Response().Header().Set("Content-type", "text/html")
+	// Return a plain-text response to avoid reflecting unescaped user input into HTML.
+	c.Response().Header().Set("Content-type", "text/plain; charset=utf-8")
 	messageLogon := fmt.Sprintf("Hello, %s! Welcome to SnakePro", userDataResult.Username)
 	// err = c.Redirect(http.StatusFound, "http://www.localhost:10003/game/ranking")
 	return c.String(http.StatusOK, messageLogon)
