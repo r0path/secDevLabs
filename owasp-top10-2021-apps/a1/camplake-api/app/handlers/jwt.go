@@ -26,7 +26,7 @@ func CreateToken(creds types.Credentials) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	return tokenString, nil
 }
