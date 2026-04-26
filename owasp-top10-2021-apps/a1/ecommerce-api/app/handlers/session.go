@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -71,7 +72,12 @@ func Login(c echo.Context) error {
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte("secret"))
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "JWT secret is not configured."})
+	}
+
+	t, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
 		return err
 	}
