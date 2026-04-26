@@ -154,11 +154,11 @@ app.post('/login', async (req, res) => {
     const password = req.body.password
     const salt = await db.getPasswordSalt(username)
     if (salt === undefined){
-        res
+        return res
             .status(400)
             .json({msg:"User doesn't exist or wrong password"})
     }
-    const bufferSalt = new Buffer(salt)
+    const bufferSalt = Buffer.from(salt)
     const hashedPassword = crypto.hash(password, bufferSalt)
     const ok = await db.checkPassword(username, hashedPassword)
     if (!ok){
