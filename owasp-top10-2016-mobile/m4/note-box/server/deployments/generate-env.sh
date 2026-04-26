@@ -4,7 +4,13 @@
 #
 
 # API environment variables
-M4_SECRET=$RANDOM$RANDOM
+# Generate a high-entropy JWT secret instead of using bash $RANDOM.
+# Falls back to /dev/urandom if openssl is unavailable.
+if command -v openssl >/dev/null 2>&1; then
+  M4_SECRET=$(openssl rand -hex 32)
+else
+  M4_SECRET=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')
+fi
 
 echo "#api.env" > deployments/api.env
 echo "M4_SECRET=$M4_SECRET" >> deployments/api.env
