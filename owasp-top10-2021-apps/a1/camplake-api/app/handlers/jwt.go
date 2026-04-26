@@ -42,39 +42,22 @@ func ExtractToken(r *http.Request) string {
 }
 
 func TokenValid(r *http.Request) (types.Claims, error) {
-	header := types.Header{}
 	claims := types.Claims{}
 
-	token := ExtractToken(r)
-	if token == "" {
+	tokenString := ExtractToken(r)
+	if tokenString == "" {
 		log.Println("No token!")
 		return claims, nil
 	}
-	t := strings.Split(token, ".")
 
-	h, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[0])
-	if err != nil {
-		return claims, err
-	}
-
-	err = json.Unmarshal(h, &header)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
-	}
-	if header.Typ != "JWT" {
-		log.Fatalln("Error on JWT")
-	}
-
-	c, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[1])
-	if err != nil {
-		return claims, err
-	}
-
-	err = json.Unmarshal(c, &claims)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return types.Claims{}, err
 	}
 
 	return claims, nil
