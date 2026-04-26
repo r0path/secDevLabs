@@ -45,7 +45,7 @@
 
   <?php foreach ($profile as $field): ?>
     <div class="field">
-      <?php print $field->value; ?>
+      <?php print htmlspecialchars($field->value, ENT_QUOTES, 'UTF-8'); ?>
     </div>
   <?php endforeach; ?>
 
