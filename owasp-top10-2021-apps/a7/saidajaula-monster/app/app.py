@@ -30,7 +30,13 @@ def login_admin_required(f):
         if (hash_cookie != cookie_separado[1]):
             return redirect("/login")
         j = json.loads(cookie_separado[0])
-        if j.get("permissao") != 1:
+        username = j.get("username", "")
+        if username == "":
+            return redirect("/login")
+        result, success = database.get_user(username)
+        if not success or result is None:
+            return redirect("/login")
+        if result[1] != 1:
             return "You don't have permission to access this route. You are not an admin. \n"
         return f(*args, **kwargs)
     return decorated_function
