@@ -59,11 +59,10 @@ func TokenValid(r *http.Request) (types.Claims, error) {
 
 	err = json.Unmarshal(h, &header)
 	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
 		return claims, err
 	}
 	if header.Typ != "JWT" {
-		log.Fatalln("Error on JWT")
+		return claims, nil
 	}
 
 	c, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[1])
@@ -73,7 +72,6 @@ func TokenValid(r *http.Request) (types.Claims, error) {
 
 	err = json.Unmarshal(c, &claims)
 	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
 		return claims, err
 	}
 
