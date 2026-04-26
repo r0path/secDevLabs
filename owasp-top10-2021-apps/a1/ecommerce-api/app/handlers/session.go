@@ -18,6 +18,7 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "sessionIDa5"
 	cookie.Value = jwt
+	cookie.HttpOnly = true
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "")
 }
