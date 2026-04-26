@@ -1,7 +1,8 @@
 package routes
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,11 @@ type keyHolderV2 struct {
 func (es *EchoServer) GetKeyV1(c echo.Context) error {
 
 	if es.MessageKey.Value == 0 {
-		es.MessageKey.Value = rand.Intn(100) + 1
+		var b [2]byte
+		if _, err := rand.Read(b[:]); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to generate key"})
+		}
+		es.MessageKey.Value = int(binary.BigEndian.Uint16(b[:])%100) + 1
 	}
 
 	return c.JSON(http.StatusOK,
