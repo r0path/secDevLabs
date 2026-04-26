@@ -22,14 +22,19 @@ def login_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         cookie = request.cookies.get("sessionId", "")
-        cookie = base64.b64decode(cookie).decode("utf-8")
-        cookie_separado = cookie.split('.')
-        if(len(cookie_separado) != 2):
-            return "Invalid cookie!"
-        hash_cookie = hashlib.sha256(cookie_separado[0].encode('utf-8')).hexdigest()
-        if (hash_cookie != cookie_separado[1]):
+        if not cookie:
             return redirect("/login")
-        j = json.loads(cookie_separado[0])
+        try:
+            cookie = base64.b64decode(cookie).decode("utf-8")
+            cookie_separado = cookie.split('.')
+            if len(cookie_separado) != 2:
+                return "Invalid cookie!"
+            hash_cookie = hashlib.sha256(cookie_separado[0].encode('utf-8')).hexdigest()
+            if hash_cookie != cookie_separado[1]:
+                return redirect("/login")
+            j = json.loads(cookie_separado[0])
+        except Exception:
+            return redirect("/login")
         if j.get("permissao") != 1:
             return "You don't have permission to access this route. You are not an admin. \n"
         return f(*args, **kwargs)
@@ -40,12 +45,17 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         cookie = request.cookies.get("sessionId", "")
-        cookie = base64.b64decode(cookie).decode("utf-8")
-        cookie_separado = cookie.split('.')
-        if(len(cookie_separado) != 2):
-            return "Invalid cookie! \n"
-        hash_cookie = hashlib.sha256(cookie_separado[0].encode('utf-8')).hexdigest()
-        if (hash_cookie != cookie_separado[1]):
+        if not cookie:
+            return redirect("/login")
+        try:
+            cookie = base64.b64decode(cookie).decode("utf-8")
+            cookie_separado = cookie.split('.')
+            if len(cookie_separado) != 2:
+                return "Invalid cookie! \n"
+            hash_cookie = hashlib.sha256(cookie_separado[0].encode('utf-8')).hexdigest()
+            if hash_cookie != cookie_separado[1]:
+                return redirect("/login")
+        except Exception:
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
