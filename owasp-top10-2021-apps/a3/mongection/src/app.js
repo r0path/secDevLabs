@@ -43,9 +43,9 @@ server.post("/login", async (request, response) => {
 
         console.log(user.length)
 
-        if(user.length == 0) { response.send('Bad Credentials'); }
+        if(user.length == 0) { response.send('Bad Credentials'); return; }
 
-        response.send("<h1>Hello, Welcome Again!</h1><h3>" + user + "</h3>");
+        response.send("<h1>Hello, Welcome Again!</h1><h3>" + String(user).replace(/[&<>\"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])) + "</h3>");
     }
    
     catch(error) { throw error; }
