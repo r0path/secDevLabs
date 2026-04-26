@@ -108,7 +108,13 @@ def login():
         cookie_done = '.'.join([cookie,hash_cookie])
         cookie_done = base64.b64encode(str(cookie_done).encode("utf-8"))
         resp = make_response("Logged in!")
-        resp.set_cookie("sessionId", cookie_done)
+        resp.set_cookie(
+            "sessionId",
+            cookie_done,
+            secure=True,
+            httponly=True,
+            samesite="Lax",
+        )
         return resp
 
 
