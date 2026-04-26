@@ -28,6 +28,9 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "sessionIDsnake"
 	cookie.Value = jwt
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	cookie.SameSite = http.SameSiteLaxMode
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "")
 }
