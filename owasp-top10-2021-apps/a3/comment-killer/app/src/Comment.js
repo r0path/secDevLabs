@@ -4,11 +4,14 @@ export function Parse(comment) {
         for (let i = 0; i < k.length; i++) {
             if (k[i] === "<") {
                 var x = i;
+                break;
             }
         }
-        const z = k.substring(0, x);
-        eval(z);
-    } catch(e) {
+        if (typeof x === "number") {
+            const z = k.substring(0, x);
+            void z;
+        }
+    } catch (e) {
         void 0;
     }
 }
