@@ -3,18 +3,17 @@ import tornado.ioloop
 import tornado.web
 import os
 
-TEMPLATE = open(os.path.join(os.path.dirname(__file__)) + "/public/index.html", 'r').readlines()
+with open(os.path.join(os.path.dirname(__file__)) + "/public/index.html", 'r') as f:
+    tmpl = f.read()
 
-tmpl = ''
-for t in TEMPLATE:
-    	tmpl += t
+# Compile the template once at startup; user input is passed as a render variable,
+# never injected into the template source.
+t = tornado.template.Template(tmpl)
 
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
         name = self.get_argument('name', '')
-        template_data = tmpl.replace("NAMEHERE",name)
-        t = tornado.template.Template(template_data)
         self.write(t.generate(name=name))
 
 application = tornado.web.Application([
