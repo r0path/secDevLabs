@@ -1,14 +1,4 @@
-export function Parse(comment) {
-    try {
-        const k = comment.substring(8);
-        for (let i = 0; i < k.length; i++) {
-            if (k[i] === "<") {
-                var x = i;
-            }
-        }
-        const z = k.substring(0, x);
-        eval(z);
-    } catch(e) {
-        void 0;
-    }
+export function Parse(_comment) {
+    // Removed: unsafe eval() of user-supplied comment content was a stored XSS vector.
+    // Comments are rendered as text by React and require no client-side script parsing.
 }
