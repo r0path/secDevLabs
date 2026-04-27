@@ -39,6 +39,10 @@ server.post("/login", async (request, response) => {
         const email = request.body.email;
         const password = request.body.password;
 
+        if (typeof email !== 'string' || typeof password !== 'string') {
+            return response.status(400).json({error: 'Invalid credentials format'});
+        }
+
         const user = await db.login({email, password});
 
         console.log(user.length)
