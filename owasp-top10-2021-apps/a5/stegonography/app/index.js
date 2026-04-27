@@ -48,7 +48,13 @@ MongoClient.connect(url, function(err, db) {
 MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     var dbo = db.db("stego");
-    var myobj = { username: "admin", password: "admin" };
+    var adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+        console.error("ADMIN_PASSWORD environment variable is not set. Skipping default admin creation.");
+        db.close();
+        return;
+    }
+    var myobj = { username: "admin", password: adminPassword };
     dbo.collection("users").insertOne(myobj, function(err, res) {
         if (err) throw err;
         console.log("Admin user added to the database");
