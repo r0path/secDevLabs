@@ -4,6 +4,7 @@ from flask import Flask, request, make_response, render_template, redirect, flas
 import uuid
 import json
 import base64
+import os
 app = Flask(__name__)
 
 
@@ -17,7 +18,11 @@ def login():
         username = request.values.get('username')
         password = request.values.get('password')
     
-        if username == "admin" and password == "admin":
+        admin_user = os.environ.get("ADMIN_USERNAME", "")
+        admin_pass = os.environ.get("ADMIN_PASSWORD", "")
+        if not admin_user or not admin_pass:
+            return redirect("/admin")
+        if username == admin_user and password == admin_pass:
             token = str(uuid.uuid4().hex)
             cookie = { "username":username, "admin":True, "sessionId":token }
             encodedSessionCookie = base64.b64encode(json.dumps(cookie).encode('utf-8'))
