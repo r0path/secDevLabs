@@ -4,7 +4,7 @@
 #
 
 # API environment variables
-M4_SECRET=$RANDOM$RANDOM
+M4_SECRET=$(openssl rand -hex 32)
 
 echo "#api.env" > deployments/api.env
 echo "M4_SECRET=$M4_SECRET" >> deployments/api.env
