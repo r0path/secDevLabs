@@ -1,7 +1,11 @@
 <?php
 $xmlfile = file_get_contents('php://input');
+// Disable external entity loading to prevent XXE injection
+if (function_exists('libxml_disable_entity_loader')) {
+    libxml_disable_entity_loader(true);
+}
 $dom = new DOMDocument();
-$dom->loadXML($xmlfile);
+$dom->loadXML($xmlfile, LIBXML_NONET);
 $contact = simplexml_import_dom($dom);
 $name = htmlspecialchars((string)$contact->name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $email = htmlspecialchars((string)$contact->email, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
