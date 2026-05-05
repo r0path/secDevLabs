@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -26,7 +24,7 @@ func CreateToken(creds types.Credentials) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	return tokenString, nil
 }
@@ -42,40 +40,25 @@ func ExtractToken(r *http.Request) string {
 }
 
 func TokenValid(r *http.Request) (types.Claims, error) {
-	header := types.Header{}
-	claims := types.Claims{}
+	claims := &types.Claims{}
 
-	token := ExtractToken(r)
-	if token == "" {
-		log.Println("No token!")
-		return claims, nil
+	tokenStr := ExtractToken(r)
+	if tokenStr == "" {
+		return *claims, fmt.Errorf("no token provided")
 	}
-	t := strings.Split(token, ".")
 
-	h, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[0])
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return jwtKey, nil
+	})
 	if err != nil {
-		return claims, err
+		return *claims, err
+	}
+	if !token.Valid {
+		return *claims, fmt.Errorf("invalid token")
 	}
 
-	err = json.Unmarshal(h, &header)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
-	}
-	if header.Typ != "JWT" {
-		log.Fatalln("Error on JWT")
-	}
-
-	c, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[1])
-	if err != nil {
-		return claims, err
-	}
-
-	err = json.Unmarshal(c, &claims)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
-	}
-
-	return claims, nil
+	return *claims, nil
 }
