@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -36,7 +37,7 @@ func PostComments(c echo.Context) error {
 			map[string]string{"result": "fail", "message": err.Error()})
 	}
 
-	comments.Text = append(comments.Text, incomingComment.Text)
+	comments.Text = append(comments.Text, html.EscapeString(incomingComment.Text))
 
 	fmt.Println("New comment added")
 
