@@ -21,7 +21,7 @@ func GenerateJwt(login string, recovery bool) (string, error) {
 		login,
 		recovery,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
 		},
 	}
 
