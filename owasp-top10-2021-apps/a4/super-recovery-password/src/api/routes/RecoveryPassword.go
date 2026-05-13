@@ -7,9 +7,46 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/labstack/echo"
 )
+
+// recoveryAttempts tracks failed recovery attempts per login for rate limiting.
+var (
+	recoveryMu       sync.Mutex
+	recoveryAttempts = make(map[string][]time.Time)
+)
+
+const (
+	maxRecoveryAttempts = 5
+	recoveryWindow      = time.Hour
+)
+
+func checkRecoveryRateLimit(login string) bool {
+	recoveryMu.Lock()
+	defer recoveryMu.Unlock()
+
+	now := time.Now()
+	cutoff := now.Add(-recoveryWindow)
+
+	// Purge attempts outside the window.
+	attempts := recoveryAttempts[login]
+	valid := attempts[:0]
+	for _, t := range attempts {
+		if t.After(cutoff) {
+			valid = append(valid, t)
+		}
+	}
+	recoveryAttempts[login] = valid
+
+	if len(valid) >= maxRecoveryAttempts {
+		return false
+	}
+	recoveryAttempts[login] = append(recoveryAttempts[login], now)
+	return true
+}
 
 func RecoveryPassword(c echo.Context) (err error) {
 	u := new(types.RecoveryPasswordAnswers)
@@ -17,6 +54,14 @@ func RecoveryPassword(c echo.Context) (err error) {
 		return
 	}
 	u.Login = strings.ToLower(u.Login)
+
+	// Rate limit: max 5 attempts per account per hour to prevent brute-force.
+	if !checkRecoveryRateLimit(u.Login) {
+		return c.JSON(http.StatusTooManyRequests, echo.Map{
+			"message": "too many recovery attempts, please try again later",
+		})
+	}
+
 	recoveryPasswordAnswers := types.RecoveryPasswordAnswers{
 		Login:        u.Login,
 		FirstAnswer:  u.FirstAnswer,

@@ -15,16 +15,17 @@ func UserInfo(c echo.Context) (err error) {
 		return
 	}
 	u.Login = strings.ToLower(u.Login)
-	userQuestions, err := database.UserQuestions(u.Login)
+	_, err = database.UserQuestions(u.Login)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "invalid login",
 		})
 	}
 
+	// Do not disclose security questions to unauthenticated callers.
+	// Returning the question text allows attackers to build targeted wordlists
+	// and brute-force the /recovery endpoint.
 	return c.JSON(http.StatusOK, echo.Map{
-		"login":          userQuestions.Login,
-		"firstQuestion":  userQuestions.FirstQuestion,
-		"secondQuestion": userQuestions.SecondQuestion,
+		"message": "recovery available",
 	})
 }
