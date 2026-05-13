@@ -17,6 +17,12 @@ import (
 )
 
 func CreateFakeToken() (string, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "camplake-secret-key"
+	}
+	jwtKey := []byte(secret)
+
 	expirationTime := time.Now().Add(5 * time.Minute)
 	claims := &types.Claims{
 		Username: "jasonVoorhess",
@@ -24,8 +30,8 @@ func CreateFakeToken() (string, error) {
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-	tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
 		log.Fatal(err)
 	}

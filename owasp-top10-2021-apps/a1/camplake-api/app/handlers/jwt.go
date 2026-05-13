@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"encoding/base64"
-	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -13,7 +13,13 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("my_secret_key")
+func getJWTKey() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "camplake-secret-key"
+	}
+	return []byte(secret)
+}
 
 func CreateToken(creds types.Credentials) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
@@ -24,7 +30,7 @@ func CreateToken(creds types.Credentials) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	tokenString, err := token.SignedString(getJWTKey())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,39 +48,25 @@ func ExtractToken(r *http.Request) string {
 }
 
 func TokenValid(r *http.Request) (types.Claims, error) {
-	header := types.Header{}
 	claims := types.Claims{}
 
-	token := ExtractToken(r)
-	if token == "" {
+	tokenString := ExtractToken(r)
+	if tokenString == "" {
 		log.Println("No token!")
-		return claims, nil
+		return claims, errors.New("no token provided")
 	}
-	t := strings.Split(token, ".")
 
-	h, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[0])
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+			return nil, errors.New("unexpected signing method: only HS256 is accepted")
+		}
+		return getJWTKey(), nil
+	})
 	if err != nil {
 		return claims, err
 	}
-
-	err = json.Unmarshal(h, &header)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
-	}
-	if header.Typ != "JWT" {
-		log.Fatalln("Error on JWT")
-	}
-
-	c, err := base64.StdEncoding.WithPadding(base64.NoPadding).DecodeString(t[1])
-	if err != nil {
-		return claims, err
-	}
-
-	err = json.Unmarshal(c, &claims)
-	if err != nil {
-		log.Fatalln("Error in JSON unmarshalling from json marshalled object:", err)
-		return claims, err
+	if !token.Valid {
+		return claims, errors.New("invalid token")
 	}
 
 	return claims, nil
