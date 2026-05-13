@@ -27,7 +27,11 @@ func (es *EchoServer) SetGenericRoutes() {
 
 	// user routes
 	es.Engine.POST("/user", es.RegisterUser)
-	es.Engine.GET("/user/:name", es.GetUser)
+
+	// restricted user routes
+	u := es.Engine.Group("/user")
+	u.Use(middleware.JWT([]byte(es.Settings.GetString("jwt_secret"))))
+	u.GET("/:name", es.GetUser)
 
 	// restricted messages routes
 	r := es.Engine.Group("/messages")
