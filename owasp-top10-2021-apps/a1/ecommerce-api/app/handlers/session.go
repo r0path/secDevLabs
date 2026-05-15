@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -119,8 +120,9 @@ func RegisterUser(c echo.Context) error {
 	err = db.RegisterUser(userData)
 	if err != nil {
 		// could not register this user into MongoDB (or MongoDB err connection)
-		errorString := fmt.Sprintf("%s", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": errorString})
+		// Log the internal error and return a generic message to the client to avoid leaking internal details.
+		log.Printf("RegisterUser: db.RegisterUser failed: %v", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Could not register user."})
 
 	}
 
