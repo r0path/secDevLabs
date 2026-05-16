@@ -31,7 +31,10 @@ def login_admin_required(f):
         hash_cookie = hmac.new(SECRET_KEY.encode('utf-8'), cookie_separado[0].encode('utf-8'), hashlib.sha256).hexdigest()
         if (hash_cookie != cookie_separado[1]):
             return redirect("/login")
-        j = json.loads(cookie_separado[0])
+        try:
+            j = json.loads(cookie_separado[0])
+        except (ValueError, json.JSONDecodeError):
+            return redirect("/login")
         if j.get("permissao") != 1:
             return "You don't have permission to access this route. You are not an admin. \n"
         return f(*args, **kwargs)
