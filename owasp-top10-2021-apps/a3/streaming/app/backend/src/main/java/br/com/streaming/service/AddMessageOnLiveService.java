@@ -25,6 +25,9 @@ public class AddMessageOnLiveService {
 
 	public Message add(Long id, MessageDTO messageDto) {
 		Live live = liveRepository.findById(id).orElse(null);
+		if (live == null) {
+			throw new IllegalArgumentException("Live with id " + id + " not found");
+		}
 		User user = userRepository.findByUsername(messageDto.username).orElse(null);
 		
 		if(user == null) {
