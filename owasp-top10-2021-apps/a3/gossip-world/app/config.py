@@ -1,7 +1,9 @@
 import os
 
 DEBUG = os.environ.get('DEBUG', 'False')
-SECRET_KEY = os.environ.get('SECRET_KEY', 'ooops,algo errado!')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY must be set via environment variable for security")
 
 MYSQL_ENDPOINT = os.environ.get('MYSQL_ENDPOINT')
 MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
