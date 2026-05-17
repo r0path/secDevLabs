@@ -18,6 +18,8 @@ var QUESTIONS = [4]string{
 	"How old are you?",
 }
 
+var ErrUserNotFound = errors.New("Error: User not found!")
+
 func OpenDatabaseConnection() (*sql.DB, error) {
 
 	databaseEndpoint := fmt.Sprintf(
@@ -114,8 +116,17 @@ func RegisterUser(login string, password string, firstQuestion string, firstAnsw
 	defer db.Close()
 
 	userExists, err := CheckUserExists(login)
-	if userExists {
-		return false, err
+	if err != nil {
+		// If the error is anything other than "user not found", treat it as fatal
+		if err != ErrUserNotFound {
+			return false, err
+		}
+		// err == ErrUserNotFound -> user does not exist, proceed with registration
+	} else {
+		// err == nil
+		if userExists {
+			return false, errors.New("Error: User already exists!")
+		}
 	}
 
 	passwordHashed, err := utils.HashPassword(password)
@@ -211,8 +222,7 @@ func CheckUserExists(login string) (bool, error) {
 	defer result.Close()
 
 	if !result.Next() {
-		err = errors.New("Error: User not found!")
-		return false, err
+		return false, ErrUserNotFound
 	}
 	return true, nil
 }
