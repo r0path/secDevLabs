@@ -266,6 +266,11 @@ jQuery.extend = jQuery.fn.extend = function() {
 					continue;
 				}
 
+				// Protect against prototype pollution: skip dangerous property names
+				if ( name === "__proto__" || name === "constructor" || name === "prototype" ) {
+					continue;
+				}
+
 				// Recurse if we're merging plain objects or arrays
 				if ( deep && copy && ( jQuery.isPlainObject( copy ) ||
 					( copyIsArray = Array.isArray( copy ) ) ) ) {
