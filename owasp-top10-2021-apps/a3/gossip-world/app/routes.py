@@ -57,7 +57,7 @@ def csrf_protect():
             error('csrf_protect',
                   'wrong value for csrf_token',
                   session.get('username'))
-            return 'ERROR: Wrong value for csrf_token'
+            return make_response('ERROR: Wrong value for csrf_token', 400)
 
 
 def login_required(f):
