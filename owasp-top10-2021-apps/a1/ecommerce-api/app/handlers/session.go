@@ -35,6 +35,32 @@ func ReadCookie(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
+// AuthMiddleware validates JWT session cookie and blocks unauthenticated requests.
+func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cookie, err := c.Cookie("sessionIDa5")
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"result": "error", "details": "Authentication required."})
+		}
+
+		// parse token
+		tokenString := cookie.Value
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// ensure token method is HMAC
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte("secret"), nil
+		})
+
+		if err != nil || !token.Valid {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"result": "error", "details": "Invalid or expired token."})
+		}
+
+		return next(c)
+	}
+}
+
 // Login checks MongoDB if this user exists and then returns a JWT session cookie.
 func Login(c echo.Context) error {
 
