@@ -62,8 +62,7 @@ func NewUser(c echo.Context) error {
 				"method": "NewUserRegisterUser",
 				"error":  err,
 			}).Error()
-		errorString := fmt.Sprintf("%s", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": errorString})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error registering user."})
 	}
 
 	return c.String(http.StatusCreated, "Register: success!\n")
