@@ -4,7 +4,6 @@ import (
 	"api/database"
 	"api/services"
 	"api/types"
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -83,7 +82,6 @@ func RecoveryPassword(c echo.Context) (err error) {
 			"token": "Error to generate token.",
 		})
 	}
-	fmt.Println(token)
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": token,
 	})
