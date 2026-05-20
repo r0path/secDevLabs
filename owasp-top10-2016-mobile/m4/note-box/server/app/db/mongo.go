@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -24,10 +25,20 @@ func Connect() error {
 	mongoPassword := os.Getenv("MONGO_DATABASE_PASSWORD")
 	mongoDbName = os.Getenv("MONGO_DATABASE_NAME")
 
+	// Validate required configuration
+	if mongoDbName == "" {
+		return fmt.Errorf("missing required environment variable: MONGO_DATABASE_NAME")
+	}
+
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://db:27017").SetAuth(options.Credential{
-		AuthSource: mongoDbName, Username: mongoUsername, Password: mongoPassword,
-	})
+	clientOptions := options.Client().ApplyURI("mongodb://db:27017")
+
+	// Only set auth if username or password provided
+	if mongoUsername != "" || mongoPassword != "" {
+		clientOptions = clientOptions.SetAuth(options.Credential{
+			AuthSource: mongoDbName, Username: mongoUsername, Password: mongoPassword,
+		})
+	}
 
 	// Connect to MongoDB
 	mongoClient, err := mongo.Connect(context.TODO(), clientOptions)
