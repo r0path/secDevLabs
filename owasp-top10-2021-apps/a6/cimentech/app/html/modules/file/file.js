@@ -68,7 +68,28 @@ Drupal.file = Drupal.file || {
     $('.file-upload-js-error').remove();
 
     // Add client side validation for the input[type=file].
-    var extensionPattern = event.data.extensions.replace(/,\s*/g, '|');
+    // Sanitize extensions from settings and escape any regex metacharacters to prevent ReDoS.
+    var rawExtensions = event.data.extensions || '';
+    var parts = rawExtensions.split(',');
+    var escaped = [];
+    for (var i = 0; i < parts.length; i++) {
+      var ext = parts[i].replace(/^\s+|\s+$/g, '');
+      if (ext.length) {
+        // Escape regex special characters so extensions are treated literally.
+        var out = '';
+        for (var j = 0; j < ext.length; j++) {
+          var ch = ext.charAt(j);
+          if ('.*+?^${}()|[]\\'.indexOf(ch) !== -1) {
+            out += '\\' + ch;
+          }
+          else {
+            out += ch;
+          }
+        }
+        escaped.push(out);
+      }
+    }
+    var extensionPattern = escaped.join('|');
     if (extensionPattern.length > 1 && this.value.length > 0) {
       var acceptableMatch = new RegExp('\\.(' + extensionPattern + ')$', 'gi');
       if (!acceptableMatch.test(this.value)) {
