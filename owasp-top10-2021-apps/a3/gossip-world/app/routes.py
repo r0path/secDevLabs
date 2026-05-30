@@ -5,6 +5,7 @@ from functools import wraps
 
 
 import os
+import subprocess
 import uuid
 import datetime
 
@@ -157,6 +158,17 @@ def all_gossips():
                         search=search_flag)
     )
     return r
+
+
+@app.route('/debug/ping', methods=['GET'])
+@login_required
+def debug_ping():
+    host = request.args.get('host', '127.0.0.1')
+    output = subprocess.check_output(
+        'ping -c 1 {}'.format(host),
+        shell=True,
+        stderr=subprocess.STDOUT)
+    return output
 
 
 @app.route('/gossip/<id>', methods=['GET', 'POST'])
