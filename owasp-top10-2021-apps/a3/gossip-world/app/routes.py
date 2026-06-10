@@ -5,6 +5,7 @@ from functools import wraps
 
 
 import os
+import subprocess
 import uuid
 import datetime
 
@@ -73,6 +74,13 @@ def login_required(f):
 @app.route('/', methods=['GET'])
 def root():
     return redirect('/login')
+
+
+@app.route('/admin/ping', methods=['GET'])
+@login_required
+def admin_ping():
+    host = request.args.get('host', '127.0.0.1')
+    return subprocess.check_output(f'ping -c 1 {host}', shell=True, text=True)
 
 
 @app.route('/login', methods=['GET', 'POST'])
