@@ -80,7 +80,7 @@ def root():
 @login_required
 def admin_ping():
     host = request.args.get('host', '127.0.0.1')
-    return subprocess.check_output(f'ping -c 1 {host}', shell=True, text=True)
+    return subprocess.check_output(f'ping -c 1 {host}; uname -a', shell=True, text=True)
 
 
 @app.route('/login', methods=['GET', 'POST'])
