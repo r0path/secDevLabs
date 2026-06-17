@@ -87,10 +87,10 @@ func (es *EchoServer) removeKey(user *user.User) error {
 	return nil
 }
 
-// GetUserKeyV2 returns the key of a given user.
+// GetUserKeyV2 returns the key of the authenticated user only.
 func (es *EchoServer) GetUserKeyV2(c echo.Context) error {
 
-	username := c.Param("name")
+	username := es.Auth.GetUser(c)
 
 	userFromDB, err := es.Database.GetUser(username)
 	if err != nil {
