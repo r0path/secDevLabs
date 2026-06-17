@@ -12,4 +12,5 @@ require (
 	github.com/valyala/fasttemplate v1.2.0 // indirect
 	go.uber.org/fx v1.13.0
 	go.uber.org/zap v1.15.0
+	golang.org/x/text v0.3.8
 )
