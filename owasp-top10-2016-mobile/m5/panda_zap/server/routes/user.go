@@ -87,10 +87,23 @@ func (es *EchoServer) removeKey(user *user.User) error {
 	return nil
 }
 
-// GetUserKeyV2 returns the key of a given user.
+// GetUserKeyV2 returns the key of the authenticated user.
 func (es *EchoServer) GetUserKeyV2(c echo.Context) error {
 
 	username := c.Param("name")
+	authenticatedUsername := es.Auth.GetUser(c)
+
+	if authenticatedUsername == "" {
+		return c.JSON(http.StatusUnauthorized,
+			map[string]string{"result": "fail", "message": "unauthorized"})
+	}
+
+	if authenticatedUsername != username {
+		es.Logger.Warn(fmt.Sprintf("User '%s' attempted to access key for user '%s'", authenticatedUsername, username))
+
+		return c.JSON(http.StatusForbidden,
+			map[string]string{"result": "fail", "message": "forbidden"})
+	}
 
 	userFromDB, err := es.Database.GetUser(username)
 	if err != nil {
