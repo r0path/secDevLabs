@@ -17,19 +17,7 @@ import (
 )
 
 func CreateFakeToken() (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &types.Claims{
-		Username: "jasonVoorhess",
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-	tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return tokenString, nil
+	return "", nil
 }
 
 func checkRequirements(configAPI *context.APIConfig) error {
