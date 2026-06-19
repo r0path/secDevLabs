@@ -50,5 +50,8 @@
         "gulp-sass": "4.0.2",
         "gulp-uglify": "3.0.2",
         "merge-stream": "^1.0.1"
+    },
+    "overrides": {
+        "tar": "6.2.1"
     }
 }
