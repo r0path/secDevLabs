@@ -2,6 +2,9 @@
   "name": "a4-insecure-design",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "nth-check": "2.0.1"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.2.0",
@@ -37,5 +40,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "nth-check": "2.0.1"
   }
 }
