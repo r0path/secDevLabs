@@ -133,4 +133,4 @@ def userInfo():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=10002)
+    app.run(debug=False, host='127.0.0.1', port=10002)
