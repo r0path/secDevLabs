@@ -3,6 +3,7 @@ module github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m4/note-box/server
 go 1.14
 
 require (
+	golang.org/x/text v0.3.8
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/labstack/echo v3.3.10+incompatible
