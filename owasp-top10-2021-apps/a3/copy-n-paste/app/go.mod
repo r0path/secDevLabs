@@ -3,6 +3,8 @@ module github.com/globocom/secDevLabs/owasp-top10-2021-apps/a3/copy-n-paste/app
 go 1.14
 
 require (
+	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1
@@ -19,4 +21,5 @@ require (
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 	golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b // indirect
 	google.golang.org/appengine v1.3.0 // indirect
+	golang.org/x/text v0.3.8 // indirect
 )
