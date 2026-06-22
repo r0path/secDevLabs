@@ -63,6 +63,10 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+		// Add security-related HTTP headers to mitigate clickjacking, XSS and MIME sniffing.
+		// Uses Echo's middleware.Secure with sensible defaults (frame-ancestors, HSTS, CSP, etc.).
+		echoInstance.Use(middleware.Secure())
+
 	templates := make(map[string]*template.Template)
 	templates["form.html"] = template.Must(template.ParseFiles("views/form.html", "views/base.html"))
 	templates["game.html"] = template.Must(template.ParseFiles("views/game.html", "views/base.html"))
