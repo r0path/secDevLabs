@@ -33,6 +33,9 @@
 		<div class="container-login100" style="background-image: url('images/bg-01.jpg');">
 			<div class="wrap-login100">
 				<form id = "login" class="login100-form validate-form" method="post">
+				{% if csrf_token is defined %}
+					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+				{% endif %}
 					<span class="login100-form-logo">
 						<i class="zmdi zmdi-landscape"></i>
 					</span>
