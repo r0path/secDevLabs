@@ -27,6 +27,11 @@ services:
         build:
             context: ../
             dockerfile: deployments/mongo.Dockerfile
+        environment:
+            # Set root credentials to enable MongoDB authentication. Override these
+            # values via environment variables or a .env file in production.
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-ChangeMe123!}
         ports:
           - "27017:27017"
           - "27018:27018"
