@@ -188,6 +188,7 @@ func RegisterUser(userData types.UserData) error {
 		"username": userData.Username,
 		"password": userData.Password,
 		"userID":   userData.UserID,
+		"highest-score": userData.HighestScore,
 	}
 	err = session.Insert(newUserData, UserCollection)
 	return err
