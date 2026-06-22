@@ -257,7 +257,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 		if ( ( options = arguments[ i ] ) != null ) {
 
 			// Extend the base object
-			for ( name in options ) {
+			for ( name in options ) { if ( !hasOwn.call( options, name ) ) { continue; }
 				src = target[ name ];
 				copy = options[ name ];
 
@@ -4490,7 +4490,7 @@ var swap = function( elem, options, callback, args ) {
 		old = {};
 
 	// Remember the old values, and insert the new ones
-	for ( name in options ) {
+	for ( name in options ) { if ( !hasOwn.call( options, name ) ) { continue; }
 		old[ name ] = elem.style[ name ];
 		elem.style[ name ] = options[ name ];
 	}
@@ -4498,7 +4498,7 @@ var swap = function( elem, options, callback, args ) {
 	ret = callback.apply( elem, args || [] );
 
 	// Revert the old values
-	for ( name in options ) {
+	for ( name in options ) { if ( !hasOwn.call( options, name ) ) { continue; }
 		elem.style[ name ] = old[ name ];
 	}
 
