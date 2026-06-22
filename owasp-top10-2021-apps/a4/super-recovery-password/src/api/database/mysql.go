@@ -93,7 +93,56 @@ func RecoveryPassword(login string, firstAnswer string, secondAnswer string) (ty
 	return recoveryPasswordAnswers, nil
 }
 
-func invalidadQuestion(question string) bool {
+// StoreRecoveryToken saves the issued recovery token for a user so it can be single-use and bound to that user.
+func StoreRecoveryToken(login string, token string) error {
+	db, err := OpenDatabaseConnection()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec("UPDATE Users SET RecoveryToken = ? WHERE Login = ?", token, login)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CheckRecoveryToken verifies that the provided token matches the stored token for the user.
+func CheckRecoveryToken(login string, token string) (bool, error) {
+	db, err := OpenDatabaseConnection()
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+
+	var stored sql.NullString
+	err = db.QueryRow("SELECT RecoveryToken FROM Users WHERE Login = ?", login).Scan(&stored)
+	if err != nil {
+		return false, err
+	}
+	if !stored.Valid || stored.String == "" {
+		return false, nil
+	}
+	return stored.String == token, nil
+}
+
+// ClearRecoveryToken removes the stored recovery token after it has been used.
+func ClearRecoveryToken(login string) error {
+	db, err := OpenDatabaseConnection()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec("UPDATE Users SET RecoveryToken = '' WHERE Login = ?", login)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func invalidadQuestion(question string) bool {"}]}]}
 	for _, b := range QUESTIONS {
 		if b == question {
 			return false
