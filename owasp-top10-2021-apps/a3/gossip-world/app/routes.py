@@ -229,4 +229,4 @@ if __name__ == '__main__':
     database = DataBase(dbEndpoint, dbUser, dbPassword, dbName)
     init_db(database)
 
-    app.run(host='0.0.0.0', port=10007, debug=False)
+    app.run(host=os.environ.get('FLASK_RUN_HOST', '127.0.0.1'), port=10007, debug=False)
