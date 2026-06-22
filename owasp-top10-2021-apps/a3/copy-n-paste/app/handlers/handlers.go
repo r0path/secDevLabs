@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo"
 
@@ -31,6 +32,16 @@ func Login(c echo.Context) error {
 	}
 
 	if validUser {
+		// On successful authentication, set a simple session cookie so middleware can enforce protected routes.
+		cookie := new(http.Cookie)
+		cookie.Name = "session_user"
+		cookie.Value = loginAttempt.User
+		cookie.Path = "/"
+		cookie.HttpOnly = true
+		// For demo purposes we set a short expiration. In production, use secure (HTTPS-only), signed tokens.
+		cookie.Expires = time.Now().Add(30 * time.Minute)
+		c.SetCookie(cookie)
+
 		msgUser := fmt.Sprintf("Welcome, %s!", loginAttempt.User)
 		return c.String(http.StatusOK, msgUser)
 	}

@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -62,10 +63,36 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+	// Basic session enforcement middleware.
+	// For this demo app we create a simple cookie-based session indicator after successful login.
+	// NOTE: This is intentionally minimal to avoid changing application architecture. In real apps,
+	// use a robust session store or signed JWTs and secure cookie attributes.
+	echoInstance.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// Allow public endpoints
+			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/register" || c.Path() == "/healthcheck" {
+				return next(c)
+			}
+			// Check for session cookie
+			cookie, err := c.Cookie("session_user")
+			if err != nil || cookie.Value == "" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			}
+			return next(c)
+		}
+	})
+
+	// login/register/healthcheck routes
 	echoInstance.GET("/", handlers.PageLogin)
 	echoInstance.POST("/login", handlers.Login)
 	echoInstance.POST("/register", handlers.Register)
 	echoInstance.GET("/healthcheck", handlers.HealthCheck)
+
+	// Example protected route to demonstrate middleware enforcement. Keep existing behavior unchanged.
+	echoInstance.GET("/protected", func(c echo.Context) error {
+		cookie, _ := c.Cookie("session_user")
+		return c.String(http.StatusOK, fmt.Sprintf("Protected content for %s", cookie.Value))
+	})
 
 	echoInstance.Logger.Fatal(echoInstance.Start(":10001"))
 }
