@@ -120,8 +120,7 @@ class RegisterScreen extends StatelessWidget {
                   child: FlatButton(
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
-                        print(usernameController.text);
-                        print(passwordController.text);
+                        // Do not log credentials
                         _register(context, usernameController.text,
                             passwordController.text);
                       }
