@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -11,7 +12,13 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = func() []byte {
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		return []byte(v)
+	}
+	log.Println("Warning: JWT_SECRET not set; using default insecure key")
+	return []byte("my_secret_key")
+}()
 
 func CreateToken(creds types.Credentials) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
