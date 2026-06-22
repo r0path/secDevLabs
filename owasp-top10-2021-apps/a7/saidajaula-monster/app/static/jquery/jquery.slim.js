@@ -2212,6 +2212,13 @@ function addCombinator( matcher, combinator, base ) {
 		checkNonElements = base && key === "parentNode",
 		doneName = done++;
 
+	// Security: avoid prototype pollution by disallowing dangerous property names for traversal
+	if ( dir === "__proto__" || dir === "constructor" || dir === "prototype" ) {
+		return combinator.first ?
+			function( elem, context, xml ) { return false; } :
+			function( elem, context, xml ) { return false; };
+	}
+
 	return combinator.first ?
 		// Check against closest ancestor/preceding element
 		function( elem, context, xml ) {
