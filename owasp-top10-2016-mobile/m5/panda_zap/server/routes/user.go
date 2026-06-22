@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m5/panda_zap/server/message"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m5/panda_zap/server/user"
 	"github.com/labstack/echo"
@@ -25,6 +28,22 @@ func (es *EchoServer) RegisterUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest,
 			map[string]string{"result": "fail", "message": err.Error()})
 	}
+
+	// Basic username normalization and validation
+	incomingUser.Name = strings.TrimSpace(incomingUser.Name)
+	if incomingUser.Name == "" {
+		return c.JSON(http.StatusBadRequest,
+			map[string]string{"result": "fail", "message": "username cannot be empty"})
+	}
+	// Allow alphanumeric, dot, underscore and hyphen. Length 3-30 characters.
+	var validName = regexp.MustCompile(`^[a-zA-Z0-9._-]{3,30}$`)
+	if !validName.MatchString(incomingUser.Name) {
+		return c.JSON(http.StatusBadRequest,
+			map[string]string{"result": "fail", "message": "invalid username"})
+	}
+
+	// Generate server-side ID to avoid trusting client-supplied ID
+	incomingUser.ID = uuid.New().String()
 
 	if _, err := es.Database.GetUser(incomingUser.Name); err == nil {
 		es.Logger.Info("Incoming user already present in the database")
