@@ -67,7 +67,15 @@ func main() {
 	echoInstance.POST("/register", handlers.Register)
 	echoInstance.GET("/healthcheck", handlers.HealthCheck)
 
-	echoInstance.Logger.Fatal(echoInstance.Start(":10001"))
+	// Check for TLS configuration via environment variables TLS_CERT_FILE and TLS_KEY_FILE
+	certFile := os.Getenv("TLS_CERT_FILE")
+	keyFile := os.Getenv("TLS_KEY_FILE")
+	if certFile != "" && keyFile != "" {
+		echoInstance.Logger.Fatal(echoInstance.StartTLS(":10001", certFile, keyFile))
+	} else {
+		fmt.Println("[!] TLS not configured. To enable TLS set TLS_CERT_FILE and TLS_KEY_FILE environment variables.")
+		echoInstance.Logger.Fatal(echoInstance.Start(":10001"))
+	}
 }
 
 func checkAPIrequirements() error {
