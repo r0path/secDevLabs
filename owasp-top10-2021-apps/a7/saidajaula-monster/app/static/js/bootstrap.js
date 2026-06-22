@@ -190,8 +190,12 @@
             var value = config[property];
             var valueType = value && Util.isElement(value) ? 'element' : toType(value);
 
-            if (!new RegExp(expectedTypes).test(valueType)) {
-              throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+            if (expectedTypes) {
+              var expectedTypesList = expectedTypes.replace(/^\(|\)$/g, '').split('|');
+
+              if (expectedTypesList.indexOf(valueType) === -1) {
+                throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+              }
             }
           }
         }
