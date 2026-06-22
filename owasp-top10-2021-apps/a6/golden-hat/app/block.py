@@ -1,5 +1,9 @@
 from mitmproxy import http
 import re
+from urllib.parse import urlsplit, unquote
+import posixpath
+
+RESP_MESSAGE = b"Haha! Only allowed hats can see this page!"
 
 def request(flow):
     if 'golden.secret' in flow.request.url or re.match(r'^http://127.0.0.1:8000/[a-z._/]*$', flow.request.url) is None:
