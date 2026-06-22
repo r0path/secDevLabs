@@ -110,7 +110,7 @@ def newuser():
         psw1 = request.form.get('password1')
         psw2 = request.form.get('password2')
 
-        if username == '' or psw1 == '' or psw2 == '':
+        if not username or not psw1 or not psw2:
             flash('All fields are required', 'danger')
             return redirect('/register')
 
