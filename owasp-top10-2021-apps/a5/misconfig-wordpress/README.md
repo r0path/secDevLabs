@@ -105,6 +105,27 @@ The suspicion was confirmed when trying to log in with these credentials. As sho
     <img src="images/attack3.1.png"/>
 </p>
 
+Remediation
+
+To mitigate brute-force attacks against WordPress logins, apply the following defenses. These changes are general guidance — test in a staging environment before applying to production to avoid disrupting legitimate users.
+
+- Implement request throttling and account lockout:
+  - Limit failed login attempts (for example 5–10) and progressively increase lockout duration for the offending account or IP.
+  - Consider exponential backoff or temporary account lockouts to slow automated attacks.
+- Add multi-factor authentication (MFA) for privileged accounts (administrators/editors).
+- Deploy CAPTCHAs or challenge-response (e.g., Google reCAPTCHA) on the login form to deter automated tools.
+- Use well-known plugins that provide rate limiting and login protection (e.g., Limit Login Attempts Reloaded, Wordfence, Jetpack Protect) and keep them updated.
+- Implement IP-based blocking and monitoring at the host or network level (e.g., fail2ban, firewall rules, WAF) to block abusive IPs.
+- Enforce strong password policies and require unique passwords for admin accounts.
+- Enable logging and alerting for suspicious login activity (high failure rates, many IPs targeting a single account) and integrate with SIEM/monitoring.
+- Keep WordPress core, themes, and plugins patched and restrict availability of the login endpoint where possible (e.g., allowlisting admin IPs, using reverse proxy protections).
+
+Notes on testing and rollout
+
+- Test changes in a staging environment to ensure legitimate users are not accidentally locked out.
+- Provide account recovery workflows (e.g., secure password reset and support channels) since lockouts may affect real users.
+- Monitor the impact after deployment and adjust thresholds to balance security and usability.
+
 ---
 
 ### 👀
