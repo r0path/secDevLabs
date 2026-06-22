@@ -72,7 +72,11 @@ func (es *EchoServer) GetUser(c echo.Context) error {
 	}
 
 	es.Logger.Info(fmt.Sprintf("User '%s' found in the database", username))
-	return c.JSON(http.StatusOK, userFromDB)
+	safeUser := tmpUser{
+		Name:     userFromDB.Name,
+		Messages: userFromDB.Messages,
+	}
+	return c.JSON(http.StatusOK, safeUser)
 }
 
 // removeKey attempts to remove a given user's key from the database.
