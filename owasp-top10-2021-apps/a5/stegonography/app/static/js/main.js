@@ -147,7 +147,21 @@ var decode = function() {
             });
         };
 
-        document.getElementById('messageDecoded').innerHTML = escHtml(obj.text);
+        // Safely display decoded text without allowing HTML execution
+        var decodedEl = document.getElementById('messageDecoded');
+        // Clear previous content
+        while (decodedEl.firstChild) {
+            decodedEl.removeChild(decodedEl.firstChild);
+        }
+        // Ensure value is a string and preserve newlines by inserting <br> elements
+        var text = String(obj.text || '');
+        var lines = text.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+            decodedEl.appendChild(document.createTextNode(lines[i]));
+            if (i < lines.length - 1) {
+                decodedEl.appendChild(document.createElement('br'));
+            }
+        }
         // document.getElementById('messageDecoded').innerHTML = messageDone
     }
   };
