@@ -188,7 +188,24 @@ Drupal.overlayChild.behaviors.alterTableHeaderOffset = function (context, settin
  * Callback for Drupal.settings.tableHeaderOffset.
  */
 Drupal.overlayChild.tableHeaderOffset = function () {
-  var topOffset = Drupal.overlayChild.prevTableHeaderOffset ? eval(Drupal.overlayChild.prevTableHeaderOffset + '()') : 0;
+  var topOffset = 0;
+  var prev = Drupal.overlayChild.prevTableHeaderOffset;
+  if (typeof prev === 'function') {
+    topOffset = prev();
+  }
+  else if (typeof prev === 'string') {
+    try {
+      var fn = prev.split('.').reduce(function (obj, key) {
+        return (obj && obj[key] !== undefined) ? obj[key] : undefined;
+      }, window);
+      if (typeof fn === 'function') {
+        topOffset = fn();
+      }
+    }
+    catch (e) {
+      topOffset = 0;
+    }
+  }
 
   return topOffset + parseInt($(document.body).css('marginTop'));
 };
