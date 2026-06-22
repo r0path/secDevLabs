@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m4/note-box/server/app/types"
@@ -30,14 +31,19 @@ func Connect() error {
 	})
 
 	// Connect to MongoDB
-	mongoClient, err := mongo.Connect(context.TODO(), clientOptions)
+	// Use a bounded context with timeout to avoid blocking indefinitely if the
+	// MongoDB endpoint is unreachable or extremely slow.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mongoClient, err := mongo.Connect(ctx, clientOptions)
 
 	if err != nil {
 		return err
 	}
 
 	// Check the connection
-	err = mongoClient.Ping(context.TODO(), nil)
+	err = mongoClient.Ping(ctx, nil)
 
 	if err != nil {
 		return err
