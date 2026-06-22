@@ -27,7 +27,7 @@ def login():
             cookie = { "username":username, "admin":True, "sessionId":token }
             encodedSessionCookie = base64.b64encode(json.dumps(cookie).encode('utf-8'))
             resp = make_response(redirect("/user"))
-            resp.set_cookie("sessionId", encodedSessionCookie)
+            resp.set_cookie("sessionId", encodedSessionCookie.decode('utf-8') if isinstance(encodedSessionCookie, bytes) else encodedSessionCookie, secure=request.is_secure, httponly=True, samesite='Lax')
             return resp
 
         else:
