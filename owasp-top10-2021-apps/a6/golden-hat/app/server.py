@@ -17,4 +17,4 @@ def secret():
     return "<body bgcolor=\"black\"><img width=\"200px\" style=\"display: block;margin-left: auto;margin-right: auto;\" src=\""+GHAT_IMAGE+"\" /><h1 style=\"color:white;text-align:center\">You made it to the club!</h1><h2 style=\"color:white;text-align:center\">Here is the password to enter: chicken nugget</h2></body>", 200
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='127.0.0.1', port=8000)
