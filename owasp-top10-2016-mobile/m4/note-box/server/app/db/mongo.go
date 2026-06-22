@@ -103,7 +103,8 @@ func FindNotes(username string) types.UserNotes {
 
 	cur, err := noteBoxDB.Collection("notes").Find(context.TODO(), filter)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("error finding notes:", err)
+		return results
 	}
 
 	for cur.Next(context.TODO()) {
@@ -112,14 +113,16 @@ func FindNotes(username string) types.UserNotes {
 		var elem types.Note
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			// Log the decode error and skip the problematic document to avoid crashing the process
+			log.Println("error decoding note:", err)
+			continue
 		}
 
 		results = append(results, elem)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Println("cursor error:", err)
 	}
 
 	// Close the cursor once finished
