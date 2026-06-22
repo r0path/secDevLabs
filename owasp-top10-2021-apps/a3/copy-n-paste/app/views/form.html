@@ -100,7 +100,7 @@ document.getElementById('login').addEventListener('submit', (e) => {
                     <div class="col s12 m12">
                         <div class="card blue-grey darken-1">
                         <div class="card-content white-text">
-                            <span class="card-title">`+event.target.responseText+`</span>
+                            <span class="card-title" id="login-user"></span>
                             <p>Sua autenticação foi realizada com sucesso!</p>
                             <p>Your authentication was successful!</p>
                         </div>
@@ -112,6 +112,8 @@ document.getElementById('login').addEventListener('submit', (e) => {
                     </div>
                 </div>
                 `;
+                // Safely insert user-controlled content as text to prevent XSS
+                document.getElementById('login-user').textContent = event.target.responseText;
             } else {
                 // Define what happens in case of error
                 alert('Response: '+event.target.responseText);
