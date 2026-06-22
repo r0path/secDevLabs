@@ -99,7 +99,9 @@ def newuser():
                 flash("Novo usuario adicionado!", "primary")
                 return redirect('/login')
             else:
-                flash(message, "danger")
+                # Do not expose raw database errors to users. Log details for diagnostics and show a generic message.
+                logging.error("Failed to insert user: %s", message)
+                flash("Unable to create user. Please choose a different username or try again later.", "danger")
                 return redirect('/register')
 
         flash("Passwords must be the same!", "danger")
