@@ -10,7 +10,7 @@ import hashlib
 import hmac
 import uuid
 from functools import wraps
-
+import re
 
 app = Flask(__name__)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme-use-env-var')
@@ -64,7 +64,7 @@ def register():
         return render_template('register.html')
 
     if request.method == 'POST':
-        form_username = request.form.get('username', "")
+        form_username = (request.form.get('username', "") or "").strip()
         form_password = request.form.get('password', "")
         form_password2 = request.form.get('password2', "")
 
@@ -72,6 +72,14 @@ def register():
             return "Error! You have to pass username and password! \n"
         elif form_password != form_password2:
             return "Error! Passwords must be the same! \n"
+
+        # Basic input validation to mitigate known Werkzeug parsing issues
+        # Restrict username to a safe character set and reasonable length
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{3,30}", form_username):
+            return "Error! Invalid username. Allowed chars: letters, numbers, _, -, . Length 3-30.\n"
+        # Enforce password length boundaries to avoid extremely large inputs
+        if len(form_password) < 8 or len(form_password) > 128:
+            return "Error! Password must be between 8 and 128 characters.\n"
 
         guid = str(uuid.uuid4())
         password = Password(form_password, form_username, guid)
