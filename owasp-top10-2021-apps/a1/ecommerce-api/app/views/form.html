@@ -97,17 +97,26 @@ document.getElementById('login').addEventListener('submit', (e) => {
                         if (XHRticket.status == 200) {
                             var jsonTicket = JSON.parse(XHRticket.responseText);
 
+                            const escapeHtml = function (unsafe) {
+                                if (unsafe === null || unsafe === undefined) return '';
+                                return String(unsafe)
+                                    .replace(/&/g, '&amp;')
+                                    .replace(/</g, '&lt;')
+                                    .replace(/>/g, '&gt;')
+                                    .replace(/\"/g, '&quot;')
+                                    .replace(/'/g, '&#39;');
+                            };
                             document.getElementById('container-form').innerHTML = `
-                            <div class="row">
-                                <div class="col s3 m3">
-                                    <div class="card blue darken-1">
-                                    <div class="card-content white-text">
-                                        <span class="card-title">Last ticket for "`+jsonResponse["username"]+`"</span>
-                                        <p>Ticket ID: `+jsonTicket["ticket"]+`</p>
+                            <div class=\"row\">
+                                <div class=\"col s3 m3\">
+                                    <div class=\"card blue darken-1\">
+                                    <div class=\"card-content white-text\">
+                                        <span class=\"card-title\">Last ticket for \"`+escapeHtml(jsonResponse["username"])+`\"</span>
+                                        <p>Ticket ID: `+escapeHtml(jsonTicket["ticket"])+`</p>
                                         <p></p>
                                     </div>
-                                    <div class="card-action">
-                                        <a href="#">More about this ticket</a>
+                                    <div class=\"card-action\">
+                                        <a href=\"#\">More about this ticket</a>
                                     </div>
                                     </div>
                                 </div>
