@@ -57,15 +57,8 @@ It's possible to reach the site through the HTTP port 8000, as shown by the imag
 
 Having a closer look at what's written bellow `SECWEB` we have a sign that the site might be using the WordPress CMS. We can confirm that suspicion by trying to access the `/wp-admin` page. As we can see from the image below, our suspicion is confirmed:
 
- <p align="center">
-    <img src="images/attack1.png"/>
-</p>
+Verbose login errors that distinguish between "invalid username" and "incorrect password" enable username enumeration. Applications should return a generic message on authentication failure (for example, "Invalid credentials") and implement additional controls such as rate limiting, account lockouts, and monitoring to mitigate enumeration and brute-force attacks.
 
-An attacker could try to log in with the username: `admin` and realize, through the error message, that `admin` is a valid user, as depicted by the image below:
-
- <p align="center">
-    <img src="images/attack2.png"/>
-</p>
 
 ### 🔥
 
