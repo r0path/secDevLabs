@@ -49,6 +49,12 @@ func (es *EchoServer) RegisterUser(c echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "session"
 	cookie.Value = token
+	// Set cookie security attributes to mitigate token theft (XSS and network eavesdropping)
+	cookie.HttpOnly = true
+	cookie.Path = "/"
+	cookie.SameSite = http.SameSiteLaxMode
+	// Only mark Secure when the request is over TLS to avoid breaking local HTTP development
+	cookie.Secure = c.Request() != nil && c.Request().TLS != nil
 
 	c.SetCookie(cookie)
 
