@@ -4,6 +4,7 @@ from flask import Flask, request, make_response, render_template, redirect, Mark
 from model.password import Password
 from model.db import DataBase
 import base64
+import binascii
 import os
 import json
 import hashlib
@@ -24,7 +25,10 @@ def login_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         cookie = request.cookies.get("sessionId", "")
-        cookie = base64.b64decode(cookie).decode("utf-8")
+        try:
+            cookie = base64.b64decode(cookie).decode("utf-8")
+        except (binascii.Error, UnicodeDecodeError, TypeError):
+            return "Invalid cookie!"
         cookie_separado = cookie.split('.')
         if(len(cookie_separado) != 2):
             return "Invalid cookie!"
@@ -42,7 +46,10 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         cookie = request.cookies.get("sessionId", "")
-        cookie = base64.b64decode(cookie).decode("utf-8")
+        try:
+            cookie = base64.b64decode(cookie).decode("utf-8")
+        except (binascii.Error, UnicodeDecodeError, TypeError):
+            return "Invalid cookie!"
         cookie_separado = cookie.split('.')
         if(len(cookie_separado) != 2):
             return "Invalid cookie! \n"
