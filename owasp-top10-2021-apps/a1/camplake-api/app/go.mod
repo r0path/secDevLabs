@@ -12,3 +12,6 @@ require (
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
+
+replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v3.2.2+incompatible
+
