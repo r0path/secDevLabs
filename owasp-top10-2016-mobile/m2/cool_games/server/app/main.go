@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m2/cool_games/server/app/db"
 	"github.com/globocom/secDevLabs/owasp-top10-2016-mobile/m2/cool_games/server/app/routes"
@@ -21,6 +22,19 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// JWT middleware: enforce authentication on all routes except the public ones
+	jwtSecret := os.Getenv("M4_SECRET")
+	jwtConfig := middleware.JWTConfig{
+		SigningKey:  []byte(jwtSecret),
+		TokenLookup: "header:Authorization",
+		AuthScheme:  "Bearer",
+		Skipper: func(c echo.Context) bool {
+			p := c.Path()
+			return p == "/login" || p == "/register" || p == "/healthcheck"
+		},
+	}
+	e.Use(middleware.JWTWithConfig(jwtConfig))
 
 	// Login route
 	e.POST("/login", routes.Login)
