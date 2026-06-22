@@ -21,7 +21,7 @@ func WriteCookie(c echo.Context, jwt string) error {
 	cookie.Value = jwt
 	cookie.HttpOnly = true
 	c.SetCookie(cookie)
-	return c.String(http.StatusOK, "")
+	return nil
 }
 
 // ReadCookie reads a cookie from echo Context.
