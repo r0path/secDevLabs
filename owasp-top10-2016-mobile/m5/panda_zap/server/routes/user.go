@@ -30,7 +30,7 @@ func (es *EchoServer) RegisterUser(c echo.Context) error {
 		es.Logger.Info("Incoming user already present in the database")
 
 		return c.JSON(http.StatusConflict,
-			map[string]string{"result": "fail", "message": err.Error()})
+			map[string]string{"result": "fail", "message": fmt.Sprintf("User '%s' already present in the database", incomingUser.Name)})
 	}
 
 	if err := es.Database.InsertUser(incomingUser); err != nil {
