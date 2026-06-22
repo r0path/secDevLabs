@@ -87,7 +87,19 @@ func main() {
 	r.GET("/ranking", api.PageRanking)
 
 	APIport := fmt.Sprintf(":%d", getAPIPort())
-	echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+	// If TLS cert and key are provided via environment variables, start server with TLS.
+	// Otherwise, start without TLS but print a warning.
+	certFile := os.Getenv("SSL_CERT")
+	keyFile := os.Getenv("SSL_KEY")
+	if certFile != "" && keyFile != "" {
+		echoInstance.Logger.Fatal(echoInstance.StartTLS(APIport, certFile, keyFile))
+	} else if certFile != "" && keyFile == "" {
+		fmt.Println("[!] SSL_CERT is set but SSL_KEY is missing. Starting without TLS.")
+		echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+	} else {
+		fmt.Println("[!] Starting without TLS. Set SSL_CERT and SSL_KEY environment variables to enable TLS.")
+		echoInstance.Logger.Fatal(echoInstance.Start(APIport))
+	}
 }
 
 func errorAPI(err error) {
