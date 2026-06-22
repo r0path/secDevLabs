@@ -43,6 +43,12 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+	// Add secure headers to harden default responses (HSTS, X-Frame-Options,
+	// X-Content-Type-Options, etc.). Using Echo's middleware.Secure() applies
+	// a reasonable set of secure HTTP headers by default without changing
+	// application behavior for existing endpoints.
+	echoInstance.Use(middleware.Secure())
+
 	echoInstance.GET("/healthcheck", api.HealthCheck)
 	APIport := fmt.Sprintf(":%d", getAPIPort())
 	echoInstance.Logger.Fatal(echoInstance.Start(APIport))
