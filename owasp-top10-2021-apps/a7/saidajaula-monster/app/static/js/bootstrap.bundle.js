@@ -189,8 +189,17 @@
             var value = config[property];
             var valueType = value && Util.isElement(value) ? 'element' : toType(value);
 
-            if (!new RegExp(expectedTypes).test(valueType)) {
-              throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+            if (typeof expectedTypes === 'string') {
+              // Avoid creating RegExp from dynamic strings to prevent ReDoS. Parse expected types instead.
+              var expectedTypesArray = expectedTypes.replace(/^\(|\)$/g, '').split('|').map(function (type) { return type.trim(); });
+              if (expectedTypesArray.indexOf(valueType) === -1) {
+                throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+              }
+            } else {
+              // Fallback to RegExp for non-string expectedTypes (should be rare)
+              if (!new RegExp(expectedTypes).test(valueType)) {
+                throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+              }
             }
           }
         }
