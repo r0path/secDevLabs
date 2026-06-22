@@ -62,6 +62,17 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+	// Security headers middleware to mitigate XSS, clickjacking and other risks
+	echoInstance.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("X-Content-Type-Options", "nosniff")
+			c.Response().Header().Set("X-Frame-Options", "SAMEORIGIN")
+			c.Response().Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+			c.Response().Header().Set("Content-Security-Policy", "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'")
+			return next(c)
+		}
+	})
+
 	echoInstance.GET("/", handlers.PageLogin)
 	echoInstance.POST("/login", handlers.Login)
 	echoInstance.POST("/register", handlers.Register)
