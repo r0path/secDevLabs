@@ -36,7 +36,9 @@ function login(event){
         )
         .then( obj => {
             if (!obj.status){
-                document.getElementById('message').innerHTML = obj.body.msg
+                const messageEl = document.getElementById('message');
+                const msgText = (obj.body && obj.body.msg) ? obj.body.msg : 'An error occurred';
+                messageEl.textContent = msgText
                 document.getElementById('message').classList.add("messageBox")
             }else{
                 window.location.href = 'home';
