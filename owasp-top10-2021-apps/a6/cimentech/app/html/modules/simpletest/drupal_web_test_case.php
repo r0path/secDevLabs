@@ -1903,7 +1903,27 @@ class DrupalWebTestCase extends DrupalTestCase {
     // by DrupalWebTestCase::error().
     if (preg_match('/^X-Drupal-Assertion-[0-9]+: (.*)$/', $header, $matches)) {
       // Call DrupalWebTestCase::error() with the parameters from the header.
-      call_user_func_array(array(&$this, 'error'), unserialize(urldecode($matches[1])));
+      // Use a safe unserialize approach to avoid PHP object injection.
+      $decoded = urldecode($matches[1]);
+      if (defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 70000) {
+        // Disallow instantiation of any classes when unserializing (PHP 7+).
+        $params = @unserialize($decoded, array('allowed_classes' => false));
+      }
+      else {
+        // For older PHP versions where unserialize options are not available,
+        // defensively reject inputs that look like object serialization to
+        // reduce the risk of object injection.
+        if (preg_match('/(^|:)O:[0-9]+:"/', $decoded)) {
+          $params = false;
+        }
+        else {
+          $params = @unserialize($decoded);
+        }
+      }
+
+      if (is_array($params)) {
+        call_user_func_array(array(&$this, 'error'), $params);
+      }
     }
 
     // Save cookies.
