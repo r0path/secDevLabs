@@ -27,8 +27,8 @@ function renderChart(data){
         }]
     });
     chart.render();
-    document.getElementById('games').innerHTML = data.numbers.games
-    document.getElementById('wins').innerHTML = data.numbers.wins
-    document.getElementById('ties').innerHTML = data.numbers.ties
-    document.getElementById('loses').innerHTML = data.numbers.loses
+    document.getElementById('games').textContent = data.numbers.games
+    document.getElementById('wins').textContent = data.numbers.wins
+    document.getElementById('ties').textContent = data.numbers.ties
+    document.getElementById('loses').textContent = data.numbers.loses
 }
